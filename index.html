@@ -79,9 +79,12 @@
                 <span class="w-4 h-4 rounded-full bg-sky-500 animate-pulse"></span>
                 NET_ADMIN_CLI
             </h1>
+
             <nav id="module-nav" class="flex gap-2">
-                <button class="btn-glow-sky active-tab bg-sky-900/20 text-sky-400 px-4 py-1.5 rounded font-mono text-sm">MÓDULO 0</button>
+                <button data-target="mod0" class="mod-tab-btn btn-glow-sky active-tab bg-sky-900/20 text-sky-400 px-4 py-1.5 rounded font-mono text-sm">MÓDULO 0</button>
+                <button data-target="mod1" class="mod-tab-btn btn-glow-sky bg-slate-800 text-slate-300 border-slate-600 px-4 py-1.5 rounded font-mono text-sm">MÓDULO 1</button>
             </nav>
+            
         </div>
         
         <div class="flex items-center gap-6">
@@ -276,6 +279,155 @@
                 </div>
             </div>
             
+        </section>
+    <!-- =========================================================
+             MÓDULO 1
+             ========================================================= -->
+        <section id="mod1" class="hidden w-[60%] h-full overflow-y-auto custom-scroll p-10 bg-slate-950 absolute inset-0">
+            
+            <div class="max-w-4xl mx-auto space-y-12 animate-[fadeIn_0.5s_ease-out]">
+                
+                <div class="texto-lectura">
+                    <h2 class="font-bold text-white mb-2 border-b-2 border-slate-800 pb-4">Módulo 1: Primer Contacto</h2>
+                    <p class="text-slate-400 mt-4">Comandos fundamentales para la supervivencia en la terminal.</p>
+                </div>
+
+                <!-- 1. Limpieza -->
+                <div class="space-y-4">
+                    <div class="texto-lectura">
+                        <h3 class="font-bold text-sky-400 flex items-center gap-3">
+                            <span class="text-[1.2em]">1.</span> Limpieza de Terminal: cls vs. clear
+                        </h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-6 texto-lectura">
+                        <div class="bg-slate-900 p-6 rounded-xl border-l-4 border-sky-500">
+                            <h4 class="font-bold text-sky-400 mb-2 font-mono">Windows: cls</h4>
+                            <p class="text-slate-300"><strong class="text-sky-300">Acrónimo:</strong> Clear Screen.</p>
+                            <p class="text-slate-400 text-sm mt-2">Interactúa con la consola de Win32 borrando el búfer de caracteres del host (conhost.exe) y posicionando el cursor en las coordenadas (0,0).</p>
+                        </div>
+                        <div class="bg-slate-900 p-6 rounded-xl border-l-4 border-emerald-500">
+                            <h4 class="font-bold text-emerald-400 mb-2 font-mono">Linux: clear</h4>
+                            <p class="text-slate-400 text-sm mt-2">Consulta la base de datos terminfo para obtener las secuencias de escape ANSI correctas para el tipo de terminal activa y limpiar el área visible.</p>
+                            <button data-cite="cite_m1_1" class="cite-btn btn-glow-sky bg-sky-900/20 text-sky-400 px-3 py-1.5 rounded-lg text-sm font-bold mt-4">📖 Cita</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Listar Directorios -->
+                <div class="space-y-6 pt-8 border-t border-slate-800">
+                    <div class="texto-lectura">
+                        <h3 class="font-bold text-sky-400 flex items-center gap-3">
+                            <span class="text-[1.2em]">2.</span> Listar Directorios: dir vs. ls
+                        </h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-6 texto-lectura">
+                        <!-- DIR -->
+                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
+                            <h4 class="font-bold text-white mb-2 font-mono">CMD: <span class="text-sky-400">dir [/A] [/S] [/B]</span></h4>
+                            <ul class="text-slate-300 text-sm space-y-3 mt-4">
+                                <li><code class="text-sky-300">/A</code> Muestra archivos con atributos específicos (ocultos). <button data-cite="cite_m1_2" class="cite-btn text-xs px-2 py-1">📖</button></li>
+                                <li><code class="text-sky-300">/S</code> Lista recursivamente en subdirectorios. <button data-cite="cite_m1_3" class="cite-btn text-xs px-2 py-1">📖</button></li>
+                                <li><code class="text-sky-300">/B</code> Formato básico sin encabezados. <button data-cite="cite_m1_4" class="cite-btn text-xs px-2 py-1">📖</button></li>
+                            </ul>
+                        </div>
+                        <!-- LS -->
+                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
+                            <h4 class="font-bold text-white mb-2 font-mono">Bash: <span class="text-emerald-400">ls [-l] [-a] [-h]</span></h4>
+                            <ul class="text-slate-300 text-sm space-y-3 mt-4">
+                                <li><code class="text-emerald-300">-l</code> Formato largo (permisos, dueño, peso, fecha). <button data-cite="cite_m1_5" class="cite-btn text-xs px-2 py-1">📖</button></li>
+                                <li><code class="text-emerald-300">-a</code> Muestra archivos ocultos (inician con punto). <button data-cite="cite_m1_6" class="cite-btn text-xs px-2 py-1">📖</button></li>
+                                <li><code class="text-emerald-300">-h</code> Tamaños legibles por humanos (K, M, G). <button data-cite="cite_m1_7" class="cite-btn text-xs px-2 py-1">📖</button></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- ASCII LS Desglosado -->
+                    <div class="bg-black p-6 rounded-xl border border-slate-700 font-mono text-emerald-400 text-sm overflow-x-auto shadow-inner">
+                        <p class="text-slate-400 mb-2">// OUTPUT DESGLOSADO (Linux "ls -lh")</p>
+<pre>
+drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
+│└┬──────┘ │ └┬┘  └┬┘  └┬┘  └──────┬─────┘ └───┬───┘
+│ │        │  │    │    │          │           └─ Nombre del recurso
+│ │        │  │    │    │          └─ Fecha última modificación
+│ │        │  │    │    └─ Tamaño legible (4 Kilobytes)
+│ │        │  │    └─ Grupo propietario (root)
+│ │        │  └─ Usuario propietario (root)
+│ │        └─ Número de enlaces físicos al nodo
+│ └─ Permisos detallados: r (lectura), w (escritura), x (ejecución)
+└─ Tipo de recurso: d (directorio), - (archivo), l (enlace simbólico)
+</pre>
+                    </div>
+                </div>
+
+                <!-- 3. Visualizar, Copiar, Mover (Comparativas rápidas) -->
+                <div class="space-y-6 pt-8 border-t border-slate-800">
+                    <div class="grid grid-cols-1 gap-6 texto-lectura">
+                        
+                        <!-- Visualizar -->
+                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
+                            <h3 class="font-bold text-sky-400 mb-4">3. Visualizar Archivos</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-white font-mono mb-1">Win (CMD): <code class="text-sky-400">type</code> <button data-cite="cite_m1_8" class="cite-btn text-xs px-2 py-1">📖</button></p>
+                                    <p class="text-white font-mono">Win (PS): <code class="text-blue-400">Get-Content</code> <button data-cite="cite_m1_9" class="cite-btn text-xs px-2 py-1">📖</button></p>
+                                </div>
+                                <div>
+                                    <p class="text-white font-mono mb-1">Linux: <code class="text-emerald-400">cat</code> (vuelca todo)</p>
+                                    <p class="text-white font-mono">Linux: <code class="text-emerald-400">less</code> (interactivo) <button data-cite="cite_m1_10" class="cite-btn text-xs px-2 py-1">📖</button></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Copiar / Mover -->
+                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
+                            <h3 class="font-bold text-sky-400 mb-4">4. Copiado y Movimiento</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="border-r border-slate-700 pr-4">
+                                    <p class="text-white font-mono mb-2 text-sm"><span class="text-sky-500">Win:</span> copy [/Y] [/V] | move [/Y] <button data-cite="cite_m1_11" class="cite-btn text-xs px-2 py-1">📖</button></p>
+                                    <p class="text-slate-400 text-sm"><code class="text-sky-300">/V</code> Verifica si se escribieron bien. <button data-cite="cite_m1_13" class="cite-btn text-xs px-2 py-1">📖</button></p>
+                                </div>
+                                <div class="pl-2">
+                                    <p class="text-white font-mono mb-2 text-sm"><span class="text-emerald-500">Lin:</span> cp [-r] [-i] [-u] | mv [-i] [-u] <button data-cite="cite_m1_12" class="cite-btn text-xs px-2 py-1">📖</button></p>
+                                    <p class="text-slate-400 text-sm"><code class="text-emerald-300">-r</code> Recursivo <button data-cite="cite_m1_14" class="cite-btn text-xs px-2 py-1">📖</button> | <code class="text-emerald-300">-i</code> Interactivo <button data-cite="cite_m1_15" class="cite-btn text-xs px-2 py-1">📖</button> | <code class="text-emerald-300">-u</code> Actualizar <button data-cite="cite_m1_16" class="cite-btn text-xs px-2 py-1">📖</button></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Privilegios -->
+                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
+                            <h3 class="font-bold text-sky-400 mb-4">5. Elevación de Privilegios</h3>
+                            <div class="space-y-4">
+                                <p class="text-slate-300"><strong class="text-sky-400 font-mono">Windows runas:</strong> Ejecuta herramientas con permisos de otro usuario (ej. administrador). <button data-cite="cite_m1_17" class="cite-btn text-xs px-2 py-1">📖</button></p>
+                                <p class="text-slate-300"><strong class="text-emerald-400 font-mono">Linux su:</strong> (Substitute User) Cambia de sesión a superusuario. <button data-cite="cite_m1_18" class="cite-btn text-xs px-2 py-1">📖</button></p>
+                                <p class="text-slate-300"><strong class="text-emerald-400 font-mono">Linux sudo:</strong> Ejecuta un comando puntual como superusuario basándose en /etc/sudoers.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Acceso Remoto (Misión) -->
+                <div class="space-y-6 pt-8 border-t border-slate-800 pb-12">
+                    <div class="texto-lectura">
+                        <h3 class="font-bold text-rose-400 flex items-center gap-3">
+                            <span class="text-[1.2em]">6.</span> Acceso Remoto: Telnet vs. SSH
+                        </h3>
+                    </div>
+                    
+                    <div class="bg-indigo-950/20 p-6 rounded-xl border border-indigo-900/50 texto-lectura text-slate-300">
+                        <p><strong class="text-indigo-400">Acrónimo:</strong> <span class="text-white">SSH = Secure Shell</span></p>
+                        
+                        <p class="mt-4"><strong class="text-orange-400">Explicación Teórica:</strong> Telnet transmite contraseñas en texto plano, vulnerable a rastreos (sniffing). SSH proporciona un canal cifrado (puerto TCP 22) usando criptografía de clave pública. <button data-cite="cite_m1_19" class="cite-btn text-xs px-2 py-1 relative -top-1">📖</button></p>
+                        
+                        <div class="mt-6 p-4 border-l-4 border-emerald-500 bg-black rounded">
+                            <p class="text-emerald-400 font-mono">> MISIÓN DEL MÓDULO (Pruébalo en la terminal):</p>
+                            <p class="text-slate-400 text-sm mt-2">Conéctate al servidor Linux escribiendo: <code class="text-white">ssh admin42@192.168.1.30</code></p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </section>
     </main>
 
