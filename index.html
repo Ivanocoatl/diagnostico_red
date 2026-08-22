@@ -1,42 +1,56 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="bg-slate-900 text-slate-200">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LabNet CLI - Aprendizaje Interactivo</title>
+    <title>LabNet CLI - NET_ADMIN_TERMINAL_V1.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Variables y utilidades personalizadas */
+        /* Tipografía Dinámica */
         :root {
             --text-base-size: 24px;
         }
-        
         body {
             font-size: var(--text-base-size);
-            background-color: #0f172a; /* slate-900 */
-            color: #e2e8f0; /* slate-200 */
         }
 
-        /* Efectos Glow Reactivos */
-        .glow-sky { transition: all 0.2s; border: 1px solid transparent; }
-        .glow-sky:hover, .glow-sky.active { 
-            border-color: #0ea5e9; 
-            box-shadow: 0 0 12px rgba(14, 165, 233, 0.6); 
+        /* --- NUEVO ESTILO VISUAL (Retro CRT & Glow) --- */
+        .btn-glow {
+            transition: all 0.1s ease-in-out;
+            box-shadow: 0 0 0px transparent;
+        }
+        .btn-glow:active, .btn-glow.active-tab {
+            box-shadow: 0 0 15px #0ea5e9, 0 0 30px #0ea5e9, inset 0 0 10px #0ea5e9;
+            border-color: #38bdf8 !important;
+            transform: scale(0.98);
+            color: #38bdf8;
         }
         
-        .glow-emerald { transition: all 0.2s; }
-        .glow-emerald:hover, .glow-emerald.active, .terminal-success { 
+        .btn-glow-danger {
+            transition: all 0.1s ease-in-out;
+        }
+        .btn-glow-danger:active {
+            box-shadow: 0 0 15px #ef4444, 0 0 30px #ef4444, inset 0 0 10px #ef4444;
+            border-color: #f87171 !important;
+            transform: scale(0.98);
+        }
+        
+        .crt-scanline {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        /* --- ESTILOS DE LA VERSIÓN ANTERIOR (Adaptados) --- */
+        .terminal-success { 
             border-color: #10b981 !important; 
-            box-shadow: 0 0 12px rgba(16, 185, 129, 0.6); 
+            box-shadow: inset 0 0 15px rgba(16, 185, 129, 0.4); 
         }
-
-        .glow-rose { transition: all 0.2s; }
-        .glow-rose:hover, .terminal-error { 
+        .terminal-error { 
             border-color: #e11d48 !important; 
-            box-shadow: 0 0 12px rgba(225, 29, 72, 0.6); 
+            box-shadow: inset 0 0 15px rgba(225, 29, 72, 0.4); 
         }
 
-        /* Animación de error en terminal */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             20%, 60% { transform: translateX(-5px); }
@@ -44,7 +58,6 @@
         }
         .shake-anim { animation: shake 0.4s ease-in-out; }
 
-        /* Estilo para las citas */
         .cite-btn {
             display: inline-flex;
             align-items: center;
@@ -56,79 +69,83 @@
             font-size: 0.7em;
             cursor: pointer;
             border: 1px solid #38bdf8;
-            transition: all 0.2s;
+            transition: all 0.1s ease-in-out;
             margin: 0 5px;
         }
-        .cite-btn:hover {
-            background: #38bdf8;
-            color: #0f172a;
-            box-shadow: 0 0 8px #38bdf8;
+        .cite-btn:hover, .cite-btn:active {
+            box-shadow: 0 0 10px #0ea5e9, inset 0 0 5px #0ea5e9;
+            background: #0f172a;
         }
 
-        /* Ocultar barra de desplazamiento visualmente pero permitir scroll */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        ::-webkit-scrollbar-track { background: #020617; } /* slate-950 */
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
-<body class="h-screen w-screen overflow-hidden flex flex-col font-sans leading-loose">
+<body class="font-sans antialiased h-screen w-screen overflow-hidden flex flex-col relative leading-loose">
+    
+    <!-- Filtro CRT retro -->
+    <div class="fixed inset-0 crt-scanline z-50"></div>
 
-    <!-- Navbar Superior -->
-    <header class="h-16 bg-slate-900 border-b border-slate-700 flex items-center justify-between px-6 shrink-0 z-10 relative">
-        <div class="flex items-center gap-4">
-            <button id="btn-back" class="px-4 py-2 bg-slate-800 rounded glow-sky text-sm font-semibold flex items-center gap-2">
-                <span>◀ Regresar</span>
-            </button>
-            <h1 class="text-xl font-bold text-sky-400">LabNet CLI</h1>
-            <!-- Pestañas de Navegación de Módulos (Se irán agregando aquí) -->
-            <nav id="module-nav" class="ml-8 flex gap-2">
-                <button data-target="mod0" class="mod-tab-btn active glow-sky px-4 py-1 rounded bg-slate-800 text-sm">Módulo 0</button>
+    <!-- NAVBAR (Estilo Retro) -->
+    <header class="bg-slate-950 border-b border-slate-800 p-4 shrink-0 z-40 flex items-center justify-between relative">
+        <div class="flex items-center gap-6">
+            <h1 class="text-xl font-bold text-sky-400 font-mono tracking-wider">NET_ADMIN_TERMINAL_V1.0</h1>
+            
+            <nav id="module-nav" class="flex gap-2">
+                <button data-target="mod0" class="btn-glow active-tab bg-slate-800 border border-slate-600 text-xs px-4 py-2 rounded font-mono text-sky-300">INTRO</button>
+                <!-- Los futuros módulos se agregarán aquí con el mismo formato -->
             </nav>
         </div>
-        
-        <!-- Configuración de Tipografía -->
-        <div class="relative group">
-            <button id="btn-settings" class="p-2 bg-slate-800 rounded-full glow-sky">
-                ⚙️
-            </button>
-            <!-- Dropdown de texto -->
-            <div class="absolute right-0 top-12 bg-slate-800 border border-slate-600 p-4 rounded hidden shadow-xl group-hover:block w-64 z-50">
-                <label class="block text-sm mb-2 text-sky-300">Tamaño de Texto: <span id="font-size-display">24</span>px</label>
-                <input type="range" id="font-slider" min="10" max="32" value="24" class="w-full accent-sky-500">
+
+        <div class="flex items-center gap-4">
+            <!-- Configuración de Tipografía -->
+            <div class="relative group">
+                <button id="btn-settings" class="btn-glow bg-slate-800 border border-slate-600 text-xs px-3 py-2 rounded font-mono text-sky-300">
+                    ⚙️ TAMAÑO TXT
+                </button>
+                <div class="absolute right-0 top-10 bg-slate-950 border border-slate-700 p-4 rounded hidden shadow-2xl group-hover:block w-64 z-50">
+                    <label class="block text-sm mb-2 text-sky-300 font-mono">Puntos: <span id="font-size-display">24</span>px</label>
+                    <input type="range" id="font-slider" min="10" max="32" value="24" class="w-full accent-sky-500">
+                </div>
             </div>
+            <button id="btn-back" class="btn-glow-danger bg-slate-800 border border-slate-600 text-xs px-4 py-2 rounded font-mono text-red-400">
+                CERRAR SESIÓN
+            </button>
         </div>
     </header>
 
-    <!-- Contenedor Principal Split-Screen -->
-    <div class="flex flex-1 h-[calc(100vh-4rem)] overflow-hidden">
+    <!-- CONTENEDOR SPLIT-SCREEN 60/40 -->
+    <div class="flex flex-1 h-[calc(100vh-4rem)] overflow-hidden relative z-10">
         
-        <!-- PANEL IZQUIERDO (Lectura) - 60% -->
-        <main class="w-[60%] h-full overflow-y-auto p-10 bg-slate-900 relative">
+        <!-- PANEL IZQUIERDO (Teoría) - 60% -->
+        <main class="w-[60%] h-full overflow-y-auto p-8 bg-slate-900 space-y-6">
             
             <!-- MÓDULO 0 -->
             <section id="mod0" class="tab-content block">
-                <h2 class="text-3xl font-bold text-sky-400 mb-6">Filosofía de Consola (CLI) vs. GUI</h2>
-                
-                <div class="mb-8 p-4 bg-slate-800 border-l-4 border-sky-500 rounded">
-                    <h3 class="font-bold text-sky-300 mb-2 text-xl">Acrónimos Clave</h3>
-                    <ul class="list-disc ml-6">
-                        <li><strong class="text-white">CLI:</strong> Command Line Interface (Interfaz de Línea de Comandos).</li>
-                        <li><strong class="text-white">GUI:</strong> Graphical User Interface (Interfaz Gráfica de Usuario).</li>
-                    </ul>
-                </div>
+                <div class="bg-slate-800/50 border border-slate-700 p-8 rounded-lg shadow-lg">
+                    <h2 class="text-3xl font-bold text-white mb-4">Filosofía de Consola (CLI) vs. GUI</h2>
+                    
+                    <div class="mb-8 p-4 bg-slate-950 border border-slate-800 rounded">
+                        <h3 class="font-bold text-sky-400 mb-2 font-mono">Acrónimos Clave</h3>
+                        <ul class="list-disc ml-6 text-slate-300">
+                            <li><strong class="text-sky-300">CLI:</strong> Command Line Interface (Interfaz de Línea de Comandos).</li>
+                            <li><strong class="text-sky-300">GUI:</strong> Graphical User Interface (Interfaz Gráfica de Usuario).</li>
+                        </ul>
+                    </div>
 
-                <h3 class="text-2xl font-semibold text-emerald-400 mt-8 mb-4">Explicación Teórica Profunda</h3>
-                <p class="mb-6">
-                    La transición histórica de los sistemas operativos supuso el paso de entornos puramente textuales a sistemas gráficos. Mientras que la GUI oculta la complejidad del sistema mediante abstracciones visuales (iconos, menús desplegables), limita la velocidad, precisión y la capacidad de automatización del administrador de sistemas. La CLI se fundamenta en la transmisión de flujos de texto que se comunican directamente con el shell del sistema. Esto permite la composición de comandos complejos mediante tuberías (pipelines) y el control absoluto del entorno <button class="cite-btn" data-cite="cite_1">📖 Ver Cita</button>.
-                </p>
+                    <h3 class="text-2xl font-semibold text-emerald-400 mt-8 mb-4">Explicación Teórica Profunda</h3>
+                    <p class="mb-6 text-slate-300">
+                        La transición histórica de los sistemas operativos supuso el paso de entornos puramente textuales a sistemas gráficos. Mientras que la GUI oculta la complejidad del sistema mediante abstracciones visuales (iconos, menús desplegables), limita la velocidad, precisión y la capacidad de automatización del administrador de sistemas. La CLI se fundamenta en la transmisión de flujos de texto que se comunican directamente con el shell del sistema. Esto permite la composición de comandos complejos mediante tuberías (pipelines) y el control absoluto del entorno <button class="cite-btn" data-cite="cite_1">📖 Ver Cita</button>.
+                    </p>
 
-                <h3 class="text-2xl font-semibold text-emerald-400 mt-8 mb-4">Funcionamiento Interno</h3>
-                <p class="mb-6">
-                    En el sistema operativo, la GUI actúa como un cliente del servidor gráfico que envía eventos de ratón y teclado, traduciéndolos a llamadas del sistema. En contraste, un intérprete de comandos o shell (como CMD.EXE, powershell.exe o /bin/bash) lee directamente de la entrada estándar (stdin), interpreta sintácticamente la cadena, busca el binario correspondiente en las rutas del sistema (variable PATH), genera un proceso hijo mediante fork() e exec() y devuelve los resultados a la salida estándar (stdout) <button class="cite-btn" data-cite="cite_2">📖 Ver Cita</button>.
-                </p>
+                    <h3 class="text-2xl font-semibold text-emerald-400 mt-8 mb-4">Funcionamiento Interno</h3>
+                    <p class="mb-6 text-slate-300">
+                        En el sistema, la GUI actúa como un cliente del servidor gráfico traduciendo clics a llamadas del sistema. En contraste, un intérprete de comandos (como CMD.EXE o /bin/bash) lee de la entrada estándar (stdin), interpreta la cadena, busca el binario en las rutas del sistema (variable PATH), genera un proceso hijo y devuelve los resultados a la salida (stdout) <button class="cite-btn" data-cite="cite_2">📖 Ver Cita</button>.
+                    </p>
 
-                <div class="my-8 bg-black p-6 rounded border border-slate-700 font-mono text-sm leading-normal text-emerald-300">
+                    <div class="my-8 bg-black p-6 rounded border border-slate-700 font-mono text-[0.8em] leading-normal text-emerald-300 shadow-inner overflow-x-auto">
 <pre>
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                             ESTRUCTURA DE FLUJO                             │
@@ -138,49 +155,51 @@
 │  [Visualización de Salida] <── [Llamadas al Núcleo / Kernel] <──────────────┘
 └─────────────────────────────────────────────────────────────────────────────┘
 </pre>
+                    </div>
+
+                    <h3 class="text-2xl font-semibold text-sky-400 mt-8 mb-4">Comparativa de Ecosistemas</h3>
+                    <div class="grid grid-cols-1 gap-4 mb-8">
+                        <div class="bg-slate-950 p-5 rounded border border-slate-800 hover:border-sky-500 transition cursor-default">
+                            <strong class="text-sky-400 font-mono block mb-2">Windows CMD (Símbolo del Sistema):</strong>
+                            <p class="text-slate-400 text-[0.9em]">Sintaxis basada en comandos históricos de MS-DOS. Orientado a procesamiento de texto plano y ejecución secuencial <button class="cite-btn" data-cite="cite_3">📖 Ver Cita</button>.</p>
+                        </div>
+                        <div class="bg-slate-950 p-5 rounded border border-slate-800 hover:border-blue-400 transition cursor-default">
+                            <strong class="text-blue-400 font-mono block mb-2">Windows PowerShell (PS):</strong>
+                            <p class="text-slate-400 text-[0.9em]">Orientado a objetos basados en .NET. No canaliza texto simple, sino instancias completas de objetos, lo que permite extraer propiedades sin parsing complejo <button class="cite-btn" data-cite="cite_4">📖 Ver Cita</button>.</p>
+                        </div>
+                        <div class="bg-slate-950 p-5 rounded border border-slate-800 hover:border-emerald-500 transition cursor-default">
+                            <strong class="text-emerald-500 font-mono block mb-2">Linux Bash:</strong>
+                            <p class="text-slate-400 text-[0.9em]">Filosofía Unix de "hacer una sola cosa bien" y usar texto plano como interfaz universal. Altamente portable <button class="cite-btn" data-cite="cite_5">📖 Ver Cita</button>.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 border-l-4 border-rose-500 p-6 rounded mt-8">
+                        <h3 class="text-xl font-semibold text-rose-400 mb-2 font-mono">Errores Comunes y Soluciones</h3>
+                        <p class="mb-4 text-slate-300"><strong>Error:</strong> "Command not found" / "No se reconoce como comando interno o externo".</p>
+                        <p class="mb-4 text-slate-400 text-[0.9em]"><strong>Causa Raíz:</strong> El ejecutable invocado no se encuentra en las rutas definidas dentro del entorno de variables globales (PATH).</p>
+                        
+                        <p class="font-bold text-sky-400 font-mono text-[0.9em] mb-3">> SOLUCIÓN EN TERMINAL (Pruébalo a la derecha):</p>
+                        <ul class="list-disc ml-6 space-y-3 text-[0.9em] text-slate-300">
+                            <li>En CMD: Ejecuta <code class="bg-slate-900 text-sky-300 px-2 py-1 rounded border border-slate-700">echo %PATH%</code></li>
+                            <li>En Bash: Ejecuta <code class="bg-slate-900 text-emerald-300 px-2 py-1 rounded border border-slate-700">echo $PATH</code> <button class="cite-btn" data-cite="cite_6">📖 Ver Cita</button></li>
+                        </ul>
+                    </div>
                 </div>
-
-                <h3 class="text-2xl font-semibold text-sky-400 mt-8 mb-4">Comparativa: CMD vs. PowerShell vs. Linux Bash</h3>
-                <ul class="space-y-6 mb-8">
-                    <li class="bg-slate-800 p-4 rounded">
-                        <strong class="text-white text-xl">Windows CMD (Símbolo del Sistema):</strong><br>
-                        Sintaxis basada en comandos internos históricos de MS-DOS. Orientado a procesamiento de texto plano y ejecución secuencial de archivos por lotes (batch files) <button class="cite-btn" data-cite="cite_3">📖 Ver Cita</button>.
-                    </li>
-                    <li class="bg-slate-800 p-4 rounded">
-                        <strong class="text-white text-xl">Windows PowerShell (PS):</strong><br>
-                        Sintaxis estructurada bajo la nomenclatura Verbo-Sustantivo. Orientado a objetos basados en .NET. No canaliza texto simple, sino instancias completas de objetos, lo que permite extraer propiedades sin parsing complejo <button class="cite-btn" data-cite="cite_4">📖 Ver Cita</button>.
-                    </li>
-                    <li class="bg-slate-800 p-4 rounded">
-                        <strong class="text-white text-xl">Linux Bash:</strong><br>
-                        Filosofía Unix de "hacer una sola cosa bien" y usar texto plano como interfaz universal. Altamente portable y enfocado en la redirección de entrada/salida <button class="cite-btn" data-cite="cite_5">📖 Ver Cita</button>.
-                    </li>
-                </ul>
-
-                <h3 class="text-2xl font-semibold text-rose-400 mt-8 mb-4">Errores Comunes y Soluciones</h3>
-                <p class="mb-4 text-rose-200"><strong>Error:</strong> "El sistema no puede encontrar la ruta especificada" / "Command not found".</p>
-                <p class="mb-4"><strong>Causa Raíz:</strong> El ejecutable invocado no se encuentra en las rutas definidas dentro del entorno de variables globales del sistema (PATH).</p>
-                <p class="mb-2 font-bold text-sky-300">Solución Paso a Paso (¡Pruébalo en la terminal de la derecha!):</p>
-                <ul class="list-disc ml-6 space-y-2 mb-10">
-                    <li>En Windows (CMD/PS), verifica el contenido con: <code class="bg-slate-900 text-sky-300 px-2 py-1 rounded">echo %PATH%</code> o <code class="bg-slate-900 text-sky-300 px-2 py-1 rounded">$env:PATH</code>.</li>
-                    <li>En Linux (Bash), verifica con: <code class="bg-slate-900 text-emerald-300 px-2 py-1 rounded">echo $PATH</code> <button class="cite-btn" data-cite="cite_6">📖 Ver Cita</button>.</li>
-                    <li>Para añadir rutas en CMD: <code class="bg-slate-900 text-sky-300 px-2 py-1 rounded">set PATH=%PATH%;C:\Ruta</code> <button class="cite-btn" data-cite="cite_7">📖 Ver Cita</button>.</li>
-                    <li>Para añadir rutas en Bash: <code class="bg-slate-900 text-emerald-300 px-2 py-1 rounded">export PATH=$PATH:/ruta</code> <button class="cite-btn" data-cite="cite_8">📖 Ver Cita</button>.</li>
-                </ul>
             </section>
         </main>
 
         <!-- PANEL DERECHO (Terminal Interactiva) - 40% -->
-        <aside class="w-[40%] h-full bg-black border-l border-slate-700 flex flex-col font-mono text-[16px] leading-normal">
+        <aside class="w-[40%] h-full bg-black border-l border-slate-800 flex flex-col font-mono text-[16px] leading-normal relative">
             
             <!-- Selector de Terminal -->
-            <div class="flex bg-slate-900 border-b border-slate-700 shrink-0">
-                <button data-term="cmd" class="term-tab-btn flex-1 py-3 text-center glow-sky text-gray-400 hover:text-white border-b-2 border-transparent active-term">CMD</button>
-                <button data-term="ps" class="term-tab-btn flex-1 py-3 text-center glow-sky text-gray-400 hover:text-white border-b-2 border-transparent">PowerShell</button>
-                <button data-term="bash" class="term-tab-btn flex-1 py-3 text-center glow-sky text-gray-400 hover:text-white border-b-2 border-transparent">Bash</button>
+            <div class="flex bg-slate-950 border-b border-slate-800 shrink-0 p-2 gap-2">
+                <button data-term="cmd" class="term-tab-btn btn-glow flex-1 py-2 text-center bg-slate-900 border border-slate-700 rounded text-sky-400 active-term">CMD</button>
+                <button data-term="ps" class="term-tab-btn btn-glow flex-1 py-2 text-center bg-slate-900 border border-slate-700 rounded text-slate-400">PowerShell</button>
+                <button data-term="bash" class="term-tab-btn btn-glow flex-1 py-2 text-center bg-slate-900 border border-slate-700 rounded text-slate-400">Bash</button>
             </div>
 
             <!-- Área de Consola -->
-            <div id="terminal-window" class="flex-1 p-4 overflow-y-auto bg-black text-gray-300 relative border-2 border-transparent transition-colors duration-300">
+            <div id="terminal-window" class="flex-1 p-4 overflow-y-auto bg-[#0a0a0a] text-gray-300 border-2 border-transparent transition-colors duration-200">
                 <div id="terminal-history" class="mb-2 whitespace-pre-wrap"></div>
                 <div class="flex items-center">
                     <span id="terminal-prompt" class="mr-2 text-gray-400">C:\Users\Estudiante&gt;</span>
@@ -190,19 +209,20 @@
         </aside>
     </div>
 
-    <!-- MODAL DE CITAS (Glassmorphism) -->
-    <div id="cite-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-slate-800/90 border border-sky-500/50 p-8 rounded-lg max-w-2xl w-full shadow-2xl relative translate-y-4 transition-transform duration-300" id="cite-modal-content">
-            <button id="close-cite" class="absolute top-4 right-4 text-slate-400 hover:text-white glow-rose rounded-full p-1">❌</button>
+    <!-- MODAL DE CITAS (Glassmorphism por encima del CRT) -->
+    <div id="cite-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-md z-[60] flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900/95 border border-sky-500/50 p-8 rounded-lg max-w-2xl w-full shadow-[0_0_30px_rgba(14,165,233,0.3)] relative translate-y-4 transition-transform duration-300" id="cite-modal-content">
+            <button id="close-cite" class="btn-glow-danger absolute top-4 right-4 bg-slate-800 text-red-400 border border-slate-600 rounded-full w-8 h-8 flex items-center justify-center font-mono">X</button>
             <div class="flex items-start gap-4 mb-4">
-                <div class="text-4xl">📚</div>
+                <div class="text-4xl">📖</div>
                 <div>
-                    <h3 id="cite-book" class="text-2xl font-bold text-sky-400">Título del Libro</h3>
+                    <h3 id="cite-book" class="text-2xl font-bold text-sky-400 font-mono">Título del Libro</h3>
                     <p class="text-slate-300 text-lg"><span id="cite-author" class="font-semibold text-white">Autor</span> • <span id="cite-year">Año</span></p>
-                    <p class="text-emerald-400 mt-1">Página/Sección: <span id="cite-page">0</span></p>
+                    <p class="text-emerald-400 mt-1 font-mono text-sm">SECCIÓN: <span id="cite-page">0</span></p>
                 </div>
             </div>
-            <div class="mt-6 bg-slate-900 p-4 rounded border-l-4 border-emerald-500 text-slate-300 italic text-lg leading-relaxed shadow-inner">
+            <div class="mt-6 bg-black p-5 rounded border border-slate-700 text-slate-300 italic text-lg leading-relaxed shadow-inner font-serif relative">
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-sky-500"></div>
                 "<span id="cite-extract">Extracto técnico...</span>"
             </div>
         </div>
@@ -210,7 +230,7 @@
 
     <!-- LÓGICA JAVASCRIPT -->
     <script>
-        // 1. MOTOR DE AUDIO 8-BITS (Web Audio API)
+        // 1. MOTOR DE AUDIO 8-BITS INTEGRADO
         const AudioEngine = {
             ctx: null,
             init: function() {
@@ -233,21 +253,20 @@
                 osc.start();
                 osc.stop(this.ctx.currentTime + duration);
             },
-            blip: function() { this.playOscillator('sine', 600, null, 0.1, 0.1); },
-            type_tick: function() { this.playOscillator('square', 800, null, 0.03, 0.02); },
-            error_buzz: function() { this.playOscillator('sawtooth', 250, 100, 0.4, 0.2, true); },
-            success: function() {
-                this.playOscillator('square', 400, null, 0.1, 0.1);
-                setTimeout(() => this.playOscillator('square', 600, null, 0.2, 0.1), 100);
+            blip: function() { this.playOscillator('square', 440, 880, 0.1, 0.1, true); }, // Navegación UI
+            type_tick: function() { this.playOscillator('triangle', 600, null, 0.05, 0.03); }, // Teclado
+            error_buzz: function() { this.playOscillator('sawtooth', 150, 100, 0.3, 0.2, true); }, // Error Terminal
+            success: function() { // Acierto Terminal (estilo coin)
+                this.playOscillator('square', 987.77, null, 0.1, 0.1);
+                setTimeout(() => this.playOscillator('square', 1318.51, null, 0.2, 0.1), 80);
             }
         };
 
-        // Escuchar clics globales para el 'blip' y teclas para 'type_tick'
+        // Escuchar clics UI
         document.addEventListener('click', (e) => {
             if(e.target.closest('button')) AudioEngine.blip();
         });
         document.addEventListener('keydown', (e) => {
-            // No hacer tick en Enter para evitar solaparse con success/error
             if(e.target.tagName === 'INPUT' && e.key !== 'Enter') AudioEngine.type_tick();
         });
 
@@ -258,9 +277,7 @@
             cite_3: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "57", extract: "CMD.exe mantiene retrocompatibilidad con los scripts batch de MS-DOS, procesando cadenas de texto de forma lineal." },
             cite_4: { book: "Windows PowerShell Networking Guide", author: "Ed Wilson", year: "2018", page: "10", extract: "A diferencia de CMD o Bash, PowerShell pasa objetos .NET ricos entre comandos, eliminando la necesidad de utilidades complejas de parseo de texto como awk o grep." },
             cite_5: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "304", extract: "La filosofía de diseño de Unix dicta que las herramientas deben hacer una sola cosa bien y comunicarse mediante texto plano." },
-            cite_6: { book: "Linux Basics for Hackers", author: "OccupyTheWeb", year: "2019", page: "74", extract: "Comprender la variable $PATH es crítico; le dice al shell de Bash exactamente en qué directorios buscar cuando intentas ejecutar un comando." },
-            cite_7: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "37", extract: "Modificar el %PATH% usando el comando SET cambia el entorno temporalmente para esa sesión." },
-            cite_8: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "131", extract: "El comando export permite que las variables de entorno, como PATH, estén disponibles para los procesos hijos iniciados desde ese shell." }
+            cite_6: { book: "Linux Basics for Hackers", author: "OccupyTheWeb", year: "2019", page: "74", extract: "Comprender la variable $PATH es crítico; le dice al shell de Bash exactamente en qué directorios buscar cuando intentas ejecutar un comando." }
         };
 
         const modal = document.getElementById('cite-modal');
@@ -277,7 +294,6 @@
                     document.getElementById('cite-extract').innerText = data.extract;
                     
                     modal.classList.remove('hidden');
-                    // Pequeño delay para la transición de opacidad
                     setTimeout(() => {
                         modal.classList.remove('opacity-0');
                         modalContent.classList.remove('translate-y-4');
@@ -312,12 +328,11 @@
         const terminalPrompt = document.getElementById('terminal-prompt');
 
         const termConfigs = {
-            cmd: { prompt: "C:\\Users\\Estudiante>", color: "text-gray-300" },
-            ps: { prompt: "PS C:\\Users\\Estudiante>", color: "text-blue-300" },
-            bash: { prompt: "kali@admin:~$", color: "text-emerald-400" }
+            cmd: { prompt: "C:\\Users\\Estudiante>", color: "text-gray-400" },
+            ps: { prompt: "PS C:\\Users\\Estudiante>", color: "text-blue-400" },
+            bash: { prompt: "kali@admin:~$", color: "text-emerald-500" }
         };
 
-        // Simulador de memoria base de la CLI
         const simulatedFileSystem = {
             pathCmd: "C:\\Windows\\system32;C:\\Windows",
             pathBash: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
@@ -326,15 +341,23 @@
         // Cambio de Pestañas de Terminal
         document.querySelectorAll('.term-tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                // Reset de estilos
                 document.querySelectorAll('.term-tab-btn').forEach(b => {
-                    b.classList.remove('active-term', 'border-sky-500', 'text-white');
-                    b.classList.add('border-transparent', 'text-gray-400');
+                    b.classList.remove('active-tab', 'text-sky-400', 'text-emerald-500', 'text-blue-400', 'border-sky-500', 'border-emerald-500', 'border-blue-500');
+                    b.classList.add('text-slate-400', 'border-slate-700');
                 });
-                const t = e.target;
-                t.classList.add('active-term', 'border-sky-500', 'text-white');
-                t.classList.remove('border-transparent', 'text-gray-400');
                 
+                const t = e.target;
                 currentTerminal = t.dataset.term;
+                
+                t.classList.remove('text-slate-400', 'border-slate-700');
+                t.classList.add('active-tab');
+                
+                // Color específico por consola en la pestaña
+                if(currentTerminal === 'cmd') t.classList.add('text-sky-400', 'border-sky-500');
+                if(currentTerminal === 'ps') t.classList.add('text-blue-400', 'border-blue-500');
+                if(currentTerminal === 'bash') t.classList.add('text-emerald-500', 'border-emerald-500');
+                
                 terminalPrompt.innerText = termConfigs[currentTerminal].prompt;
                 terminalPrompt.className = `mr-2 ${termConfigs[currentTerminal].color}`;
                 terminalInput.focus();
@@ -346,14 +369,10 @@
             if (e.key === 'Enter') {
                 const cmdLine = this.value.trim();
                 this.value = '';
-                
                 if(!cmdLine) return;
 
-                // Escribir comando en el historial
                 terminalHistory.innerHTML += `\n<span class="${termConfigs[currentTerminal].color}">${termConfigs[currentTerminal].prompt}</span> ${cmdLine}`;
-                
                 processCommand(cmdLine, currentTerminal);
-                
                 terminalWindow.scrollTop = terminalWindow.scrollHeight;
             }
         });
@@ -361,9 +380,7 @@
         function triggerError() {
             AudioEngine.error_buzz();
             terminalWindow.classList.add('terminal-error', 'shake-anim');
-            setTimeout(() => {
-                terminalWindow.classList.remove('terminal-error', 'shake-anim');
-            }, 400);
+            setTimeout(() => terminalWindow.classList.remove('terminal-error', 'shake-anim'), 400);
         }
 
         function triggerSuccess() {
@@ -378,35 +395,17 @@
             let output = '';
             let isError = false;
 
-            // Comandos Globales Universales (Memoria acumulativa básica)
             if (baseCmd === 'clear' || baseCmd === 'cls') {
                 terminalHistory.innerHTML = '';
                 return;
             }
 
-            // Lógica por entorno
             if (env === 'cmd') {
                 if (baseCmd === 'echo' && args[1] === '%PATH%') {
                     output = simulatedFileSystem.pathCmd;
                     triggerSuccess();
-                } else if (baseCmd === 'set' && args[1]?.startsWith('PATH=')) {
-                    simulatedFileSystem.pathCmd = args[1].replace('PATH=', '');
-                    output = `PATH actualizado.`;
-                    triggerSuccess();
                 } else {
-                    output = `'${baseCmd}' is not recognized as an internal or external command.`;
-                    isError = true;
-                }
-            } 
-            else if (env === 'ps') {
-                if (baseCmd === 'echo' && args[1] === '$env:PATH') {
-                    output = simulatedFileSystem.pathCmd;
-                    triggerSuccess();
-                } else if (baseCmd === 'get-netipaddress') {
-                    output = `IPAddress         : 192.168.1.100\nInterfaceAlias    : Wi-Fi\nAddressFamily     : IPv4`;
-                    triggerSuccess();
-                } else {
-                    output = `The term '${baseCmd}' is not recognized as the name of a cmdlet.`;
+                    output = `'${baseCmd}' no se reconoce como un comando interno o externo.`;
                     isError = true;
                 }
             } 
@@ -414,15 +413,17 @@
                 if (baseCmd === 'echo' && args[1] === '$PATH') {
                     output = simulatedFileSystem.pathBash;
                     triggerSuccess();
-                } else if (baseCmd === 'export' && args[1]?.startsWith('PATH=')) {
-                    simulatedFileSystem.pathBash = args[1].replace('PATH=', '');
-                    output = ''; // Bash silencioso en export
-                    triggerSuccess();
-                } else if (baseCmd === 'ls') {
-                    output = `Documents  Downloads  Desktop`;
-                    triggerSuccess();
                 } else {
                     output = `bash: ${baseCmd}: command not found`;
+                    isError = true;
+                }
+            }
+            else if (env === 'ps') {
+                if (baseCmd === 'echo' && args[1] === '$env:PATH') {
+                    output = simulatedFileSystem.pathCmd;
+                    triggerSuccess();
+                } else {
+                    output = `The term '${baseCmd}' is not recognized as the name of a cmdlet.`;
                     isError = true;
                 }
             }
@@ -431,15 +432,11 @@
                 triggerError();
                 terminalHistory.innerHTML += `\n<span class="text-rose-400">${output}</span>`;
             } else if (output) {
-                // Efecto de tipeo rápido para la salida
                 terminalHistory.innerHTML += `\n<span class="text-gray-300">${output}</span>`;
             }
         }
 
-        // Foco inicial
         terminalInput.focus();
-        document.querySelector('[data-term="cmd"]').click();
-
     </script>
 </body>
 </html>
