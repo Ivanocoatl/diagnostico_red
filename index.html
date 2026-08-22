@@ -3,484 +3,303 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LabNet CLI - Módulo 0</title>
+    <title>LabNet CLI - Simulador de Redes Maestro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Variables CSS para Tipografía Dinámica */
-        :root {
-            --text-base-size: 24px;
-        }
-
-        /* Tipografía base ajustable para máxima legibilidad en lectura */
-        .texto-lectura {
-            font-size: var(--text-base-size);
-            line-height: 1.6;
-        }
-        
-        .texto-lectura h2 { font-size: calc(var(--text-base-size) * 1.5); }
-        .texto-lectura h3 { font-size: calc(var(--text-base-size) * 1.25); }
-        .texto-lectura h4 { font-size: calc(var(--text-base-size) * 1.1); }
+        /* Tipografía Dinámica */
+        :root { --text-base-size: 24px; }
+        .texto-lectura { font-size: var(--text-base-size); line-height: 1.6; }
+        .texto-lectura h2 { font-size: calc(var(--text-base-size) * 1.4); }
+        .texto-lectura h3 { font-size: calc(var(--text-base-size) * 1.2); }
+        .texto-lectura h4 { font-size: calc(var(--text-base-size) * 1.05); }
 
         /* Efectos Glow Customizados */
-        .btn-glow-sky { transition: all 0.2s ease; box-shadow: 0 0 0px transparent; border: 1px solid #0ea5e9; }
-        .btn-glow-sky:hover, .btn-glow-sky.active-tab { box-shadow: 0 0 15px #0ea5e9, inset 0 0 10px #0ea5e9; border-color: #7dd3fc; }
-        .btn-glow-sky:active { transform: scale(0.95); }
+        .btn-glow-sky { transition: all 0.2s ease; border: 1px solid transparent; }
+        .btn-glow-sky:hover, .btn-glow-sky.active-tab { box-shadow: 0 0 15px #0ea5e9, inset 0 0 10px #0ea5e9; border-color: #38bdf8; }
+        .btn-glow-emerald { transition: all 0.2s ease; border: 1px solid transparent; }
+        .btn-glow-emerald:hover, .btn-glow-emerald.active-tab { box-shadow: 0 0 15px #10b981, inset 0 0 10px #10b981; border-color: #34d399; }
+        .btn-glow-rose { transition: all 0.2s ease; border: 1px solid transparent; }
+        .btn-glow-rose:hover { box-shadow: 0 0 15px #e11d48, inset 0 0 10px #e11d48; border-color: #fb7185; }
 
-        .btn-glow-emerald { transition: all 0.2s ease; box-shadow: 0 0 0px transparent; border: 1px solid #10b981; }
-        .btn-glow-emerald:hover, .btn-glow-emerald.active-tab { box-shadow: 0 0 15px #10b981, inset 0 0 10px #10b981; border-color: #6ee7b7; }
-        .btn-glow-emerald:active { transform: scale(0.95); }
-
-        .btn-glow-blue { transition: all 0.2s ease; box-shadow: 0 0 0px transparent; border: 1px solid #3b82f6; }
-        .btn-glow-blue:hover, .btn-glow-blue.active-tab { box-shadow: 0 0 15px #3b82f6, inset 0 0 10px #3b82f6; border-color: #93c5fd; }
-        .btn-glow-blue:active { transform: scale(0.95); }
-
-        .btn-glow-rose { transition: all 0.2s ease; box-shadow: 0 0 0px transparent; border: 1px solid #e11d48; }
-        .btn-glow-rose:hover { box-shadow: 0 0 15px #e11d48, inset 0 0 10px #e11d48; border-color: #fda4af; }
-        .btn-glow-rose:active { transform: scale(0.95); }
-
-        /* Animaciones para la terminal */
-        @keyframes errorShake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); border-color: #e11d48; box-shadow: inset 0 0 15px rgba(225, 29, 72, 0.4); }
-            75% { transform: translateX(5px); border-color: #e11d48; box-shadow: inset 0 0 15px rgba(225, 29, 72, 0.4); }
-        }
+        /* Animaciones Terminal */
+        @keyframes errorShake { 0%, 100% { transform: translateX(0); } 25%, 75% { transform: translateX(-5px); border-color: #e11d48; box-shadow: inset 0 0 15px rgba(225, 29, 72, 0.5); } 50% { transform: translateX(5px); } }
         .terminal-error { animation: errorShake 0.4s ease-in-out; }
-        
-        .terminal-success { 
-            border-color: #10b981 !important; 
-            box-shadow: inset 0 0 15px rgba(16, 185, 129, 0.4); 
-            transition: all 0.3s;
-        }
-
+        .terminal-success { border-color: #10b981 !important; box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.5); transition: all 0.3s; }
         .cursor-blink { animation: blink 1s step-end infinite; }
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* Estilo para el Scrollbar oculto pero funcional */
+        /* Componentes UI */
         .custom-scroll::-webkit-scrollbar { width: 8px; }
         .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* Efecto vidrio esmerilado para modal */
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(14, 165, 233, 0.3);
-        }
+        .glass-panel { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(14, 165, 233, 0.3); }
+        .alert-pulse-rose { animation: pulseRose 2s infinite; }
+        @keyframes pulseRose { 0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(225, 29, 72, 0); } 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); } }
+        .alert-pulse-emerald { animation: pulseEmerald 2s infinite; }
+        @keyframes pulseEmerald { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
     </style>
 </head>
 <body class="font-sans antialiased h-screen flex flex-col overflow-hidden selection:bg-sky-500 selection:text-white">
 
-    <!-- HEADER GLOBAL -->
-    <header class="bg-slate-900 border-b border-sky-900/50 p-4 shrink-0 flex justify-between items-center z-20 shadow-[0_0_15px_rgba(14,165,233,0.1)]">
-        <div class="flex items-center gap-6">
-            <h1 class="text-2xl font-bold text-sky-400 font-mono flex items-center gap-3">
-                <span class="w-4 h-4 rounded-full bg-sky-500 animate-pulse"></span>
-                NET_ADMIN_CLI
+    <!-- CABECERA -->
+    <header class="bg-slate-900 border-b border-sky-900/50 p-3 shrink-0 flex justify-between items-center z-20 shadow-[0_0_15px_rgba(14,165,233,0.1)]">
+        <div class="flex items-center gap-4">
+            <h1 class="text-xl font-bold text-sky-400 font-mono flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-sky-500 animate-pulse"></span> NET_ADMIN_CLI
             </h1>
-
-            <nav id="module-nav" class="flex gap-2">
-                <button data-target="mod0" class="mod-tab-btn btn-glow-sky active-tab bg-sky-900/20 text-sky-400 px-4 py-1.5 rounded font-mono text-sm">MÓDULO 0</button>
-                <button data-target="mod1" class="mod-tab-btn btn-glow-sky bg-slate-800 text-slate-300 border-slate-600 px-4 py-1.5 rounded font-mono text-sm">MÓDULO 1</button>
+            <nav id="module-nav" class="flex gap-2 ml-4">
+                <button data-target="mod0" class="mod-tab-btn btn-glow-sky active-tab bg-sky-900/20 text-sky-400 px-3 py-1 rounded font-mono text-xs">M0</button>
+                <button data-target="mod1" class="mod-tab-btn btn-glow-sky bg-slate-800 text-slate-300 px-3 py-1 rounded font-mono text-xs">M1</button>
+                <button data-target="mod2" class="mod-tab-btn btn-glow-sky bg-slate-800 text-slate-300 px-3 py-1 rounded font-mono text-xs">M2</button>
+                <button data-target="mod3" class="mod-tab-btn btn-glow-sky bg-slate-800 text-slate-300 px-3 py-1 rounded font-mono text-xs">M3</button>
+                <button data-target="mod4" class="mod-tab-btn btn-glow-sky bg-slate-800 text-slate-300 px-3 py-1 rounded font-mono text-xs">M4</button>
+                <button data-target="mod5" class="mod-tab-btn btn-glow-rose bg-slate-800 text-slate-300 border-rose-900/50 px-3 py-1 rounded font-mono text-xs">M5 (DIAG)</button>
             </nav>
-            
         </div>
-        
-        <div class="flex items-center gap-6">
-            <!-- Configuración de Tipografía -->
+        <div class="flex items-center gap-4">
             <div class="relative group">
-                <button class="btn-glow-sky bg-slate-800 text-slate-300 border-slate-600 px-3 py-1.5 rounded font-mono text-sm">
-                    ⚙️ TAMAÑO TXT
-                </button>
-                <div class="absolute right-0 top-10 glass-panel p-4 rounded hidden shadow-2xl group-hover:block w-64 z-50">
-                    <label class="block text-sm mb-2 text-sky-300 font-mono">Puntos: <span id="font-size-display">24</span>px</label>
-                    <input type="range" id="font-slider" min="10" max="32" value="24" class="w-full accent-sky-500">
+                <button class="btn-glow-sky bg-slate-800 text-slate-300 px-3 py-1 rounded font-mono text-xs">⚙️ TXT</button>
+                <div class="absolute right-0 top-8 glass-panel p-4 rounded hidden shadow-2xl group-hover:block w-48 z-50">
+                    <label class="block text-xs mb-2 text-sky-300 font-mono">Puntos: <span id="font-size-display">24</span>px</label>
+                    <input type="range" id="font-slider" min="12" max="32" value="24" class="w-full accent-sky-500">
                 </div>
             </div>
-            <div class="text-sm font-mono text-slate-400">STATUS: ONLINE | AUDIO: ON</div>
         </div>
     </header>
 
-    <!-- CONTENEDOR PRINCIPAL (SPLIT SCREEN 60/40) -->
-    <main class="flex-grow flex w-full h-[calc(100vh-73px)] relative">
+    <!-- ÁREA PRINCIPAL DINÁMICA -->
+    <main class="flex-grow flex w-full h-[calc(100vh-60px)] relative bg-slate-950">
         
-        <!-- =========================================================
-             PANEL IZQUIERDO: LECTURA TEÓRICA (60%)
-             ========================================================= -->
-        <section class="w-[60%] h-full overflow-y-auto custom-scroll p-10 bg-slate-950">
+        <!-- PANEL IZQUIERDO (Lectura) -->
+        <section id="left-panel" class="w-[60%] h-full overflow-y-auto custom-scroll p-8 transition-all duration-500 ease-in-out">
             
-            <div class="max-w-4xl mx-auto space-y-12 animate-[fadeIn_0.5s_ease-out]">
-                
+            <!-- MÓDULO 0 -->
+            <div id="mod0" class="module-content block space-y-8 animate-[fadeIn_0.5s]">
+                <h2 class="font-bold text-white border-b border-slate-800 pb-2">Módulo 0: Intro a la CLI vs GUI</h2>
+                <div class="texto-lectura space-y-6">
+                    <p class="text-slate-300">La GUI oculta la complejidad mediante abstracciones visuales, limitando la automatización. La CLI se fundamenta en flujos de texto que se comunican directamente con el shell. <button data-cite="cite_0_1" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800">📖 Cita</button></p>
+                    <div class="bg-slate-900 p-4 rounded border-l-4 border-sky-500">
+                        <h4 class="font-mono text-sky-400 mb-2">Funcionamiento Interno</h4>
+                        <p class="text-slate-400">El intérprete lee de stdin, busca el binario en la variable PATH, genera un proceso hijo mediante fork()/exec() y devuelve la salida a stdout. <button data-cite="cite_0_2" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800">📖 Cita</button></p>
+                    </div>
+                    <h3 class="font-bold text-emerald-400">Comparativa de Ecosistemas</h3>
+                    <ul class="space-y-4">
+                        <li class="bg-black p-4 rounded border border-slate-800"><strong class="text-sky-300">CMD:</strong> Texto plano, ejecución secuencial batch. <button data-cite="cite_0_3" class="cite-btn text-xs px-2 rounded text-slate-400">📖</button></li>
+                        <li class="bg-black p-4 rounded border border-slate-800"><strong class="text-blue-300">PowerShell:</strong> Objetos .NET (CLR), Verbo-Sustantivo. <button data-cite="cite_0_4" class="cite-btn text-xs px-2 rounded text-slate-400">📖</button></li>
+                        <li class="bg-black p-4 rounded border border-slate-800"><strong class="text-emerald-300">Bash:</strong> Filosofía Unix, tuberías de texto, portable. <button data-cite="cite_0_5" class="cite-btn text-xs px-2 rounded text-slate-400">📖</button></li>
+                    </ul>
+                    <div class="bg-rose-950/20 p-4 border border-rose-900 rounded">
+                        <strong class="text-rose-400">Error Común: "Command not found"</strong><br>
+                        <span class="text-slate-400">El binario no está en el PATH. Solución: <code class="text-sky-300">echo %PATH%</code> o <code class="text-emerald-300">echo $PATH</code></span> <button data-cite="cite_0_6" class="cite-btn text-xs px-2 rounded text-slate-400">📖</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO 1 -->
+            <div id="mod1" class="module-content hidden space-y-8 animate-[fadeIn_0.5s]">
+                <h2 class="font-bold text-white border-b border-slate-800 pb-2">Módulo 1: Primer Contacto</h2>
+                <div class="texto-lectura space-y-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-900 p-4 rounded border border-slate-800">
+                            <h4 class="text-sky-400 font-mono">Windows</h4>
+                            <p class="text-sm mt-2"><code class="text-white">cls</code> Borra búfer conhost. <button data-cite="cite_1_1" class="cite-btn text-xs px-1">📖</button></p>
+                            <p class="text-sm mt-2"><code class="text-white">dir /S /B</code> Recursivo, sin encabezados. <button data-cite="cite_1_3" class="cite-btn text-xs px-1">📖</button></p>
+                            <p class="text-sm mt-2"><code class="text-white">type</code> / <code class="text-blue-300">Get-Content</code> <button data-cite="cite_1_8" class="cite-btn text-xs px-1">📖</button></p>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded border border-slate-800">
+                            <h4 class="text-emerald-400 font-mono">Linux</h4>
+                            <p class="text-sm mt-2"><code class="text-white">clear</code> ANSI escape. <button data-cite="cite_1_2" class="cite-btn text-xs px-1">📖</button></p>
+                            <p class="text-sm mt-2"><code class="text-white">ls -lh</code> Largo y legible (K, M). <button data-cite="cite_1_7" class="cite-btn text-xs px-1">📖</button></p>
+                            <p class="text-sm mt-2"><code class="text-white">cat</code> / <code class="text-white">less</code> (paginado) <button data-cite="cite_1_10" class="cite-btn text-xs px-1">📖</button></p>
+                        </div>
+                    </div>
+                    <div class="bg-black p-4 rounded border border-slate-800 font-mono text-xs overflow-x-auto text-emerald-400">
+<pre>drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
+│└┬──────┘ │ └┬┘  └┬┘  └┬┘  └──────┬─────┘ └───┬───┘
+│ │        │  │    │    │          │           └─ Nombre
+│ │        │  │    │    │          └─ Fecha mod.
+│ │        │  │    │    └─ Tamaño (4K)
+│ │        │  │    └─ Grupo / Usuario
+│ └─ Permisos (rwx)
+└─ Tipo (d=dir, -=file)</pre>
+                    </div>
+                    <div class="bg-indigo-950/20 p-4 border-l-4 border-indigo-500 rounded">
+                        <h4 class="text-indigo-400 font-bold">Acceso Remoto: Telnet vs SSH</h4>
+                        <p class="text-slate-300 text-sm mt-2">Telnet transmite texto plano (packet sniffing). SSH provee túnel cifrado asimétrico TCP 22. <button data-cite="cite_1_19" class="cite-btn text-xs px-2 py-1 rounded bg-slate-800 text-indigo-300">📖 Cita</button></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO 2 -->
+            <div id="mod2" class="module-content hidden space-y-8 animate-[fadeIn_0.5s]">
+                <h2 class="font-bold text-white border-b border-slate-800 pb-2">Módulo 2: Direccionamiento IP</h2>
+                <div class="texto-lectura space-y-6">
+                    <p class="text-slate-300"><strong>IPv4 (32 bits) vs IPv6 (128 bits):</strong> Superación del agotamiento de bloques. <button data-cite="cite_2_1" class="cite-btn text-xs px-1">📖</button></p>
+                    <p class="text-slate-300"><strong>NAT:</strong> Traduce múltiples IPs privadas internas a una IP WAN, modificando encabezados y puertos (Tabla NAT). <button data-cite="cite_2_2" class="cite-btn text-xs px-1">📖</button></p>
+                    
+                    <div class="bg-black p-6 rounded-xl border border-emerald-900">
+                        <h4 class="text-emerald-400 font-mono mb-4">Calculadora CIDR Interactiva</h4>
+                        <input type="range" id="cidr-slider" min="8" max="30" value="24" class="w-full accent-emerald-500 mb-2">
+                        <div class="font-mono text-sm space-y-2 mt-4 text-slate-300">
+                            <div class="flex justify-between"><span>Prefijo:</span> <span class="text-emerald-400">/<span id="cidr-val">24</span></span></div>
+                            <div class="flex justify-between"><span>Máscara (Dec):</span> <span id="mask-dec">255.255.255.0</span></div>
+                            <div class="flex justify-between"><span>Máscara (Bin):</span> <span id="mask-bin" class="text-yellow-400">11111111.11111111.11111111.00000000</span></div>
+                            <div class="flex justify-between border-t border-slate-700 pt-2 mt-2">
+                                <span class="text-sky-300">IP Host AND Máscara = </span>
+                                <strong class="text-emerald-400" id="net-dec">192.168.1.0</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-sm text-center">
+                        <div class="bg-slate-900 p-2 border border-slate-800 text-sky-300">20/21 FTP</div>
+                        <div class="bg-slate-900 p-2 border border-emerald-500 text-emerald-400">22 SSH</div>
+                        <div class="bg-slate-900 p-2 border border-rose-900 text-rose-400">23 Telnet</div>
+                        <div class="bg-slate-900 p-2 border border-slate-800 text-sky-300">53 DNS</div>
+                        <div class="bg-slate-900 p-2 border border-slate-800 text-sky-300">67/68 DHCP</div>
+                        <div class="bg-slate-900 p-2 border border-slate-800 text-sky-300">80/443 HTTP/S</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO 3 -->
+            <div id="mod3" class="module-content hidden space-y-8 animate-[fadeIn_0.5s]">
+                <h2 class="font-bold text-white border-b border-slate-800 pb-2">Módulo 3: Windows Network</h2>
+                <div class="texto-lectura space-y-6">
+                    <h3 class="text-sky-400 font-bold">Consola Tradicional (NDIS)</h3>
+                    <ul class="bg-slate-900 p-4 border border-slate-800 rounded space-y-3 text-sm text-slate-300">
+                        <li><code class="text-sky-300">ipconfig /all</code> MAC, DHCP, DNS. <button data-cite="cite_3_1" class="cite-btn text-xs px-1">📖</button></li>
+                        <li><code class="text-sky-300">ipconfig /release</code> Mensaje DHCPRELEASE. <button data-cite="cite_3_2" class="cite-btn text-xs px-1">📖</button></li>
+                        <li><code class="text-sky-300">ipconfig /renew</code> Mensaje DHCPDISCOVER. <button data-cite="cite_3_3" class="cite-btn text-xs px-1">📖</button></li>
+                        <li><code class="text-sky-300">ipconfig /flushdns</code> Limpia caché de resolución.</li>
+                    </ul>
+
+                    <h3 class="text-blue-400 font-bold">Cmdlets Modernos (PowerShell)</h3>
+                    <ul class="bg-blue-950/20 p-4 border-l-4 border-blue-500 rounded space-y-3 text-sm text-slate-300">
+                        <li><code class="text-blue-300 bg-black px-1">Get-NetAdapter</code> Adaptadores e ifIndex. <button data-cite="cite_3_4" class="cite-btn text-xs px-1">📖</button></li>
+                        <li><code class="text-blue-300 bg-black px-1">New-NetIPAddress</code> Requiere UAC elevado. Si no: "Acceso Denegado". <button data-cite="cite_3_5" class="cite-btn text-xs px-1">📖</button></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- MÓDULO 4 -->
+            <div id="mod4" class="module-content hidden space-y-8 animate-[fadeIn_0.5s]">
+                <h2 class="font-bold text-white border-b border-slate-800 pb-2">Módulo 4: Linux Network</h2>
+                <div class="texto-lectura space-y-6">
+                    <p class="text-slate-300">Las herramientas de <code class="text-emerald-300">net-tools</code> (ifconfig) han sido reemplazadas por la pila moderna <code class="text-emerald-300">iproute2</code> (ip a, ip link).</p>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-900 p-4 border border-slate-800 rounded">
+                            <strong class="text-emerald-400 font-mono block mb-2">iproute2</strong>
+                            <p class="text-sm text-slate-300"><code class="text-white">ip a</code> Direcciones IP <button data-cite="cite_4_1" class="cite-btn text-xs px-1">📖</button></p>
+                            <p class="text-sm text-slate-300"><code class="text-white">ip route</code> Tabla estática</p>
+                        </div>
+                        <div class="bg-slate-900 p-4 border border-slate-800 rounded">
+                            <strong class="text-emerald-400 font-mono block mb-2">NetworkManager</strong>
+                            <p class="text-sm text-slate-300"><code class="text-white">nmcli dev status</code> <button data-cite="cite_4_2" class="cite-btn text-xs px-1">📖</button></p>
+                        </div>
+                    </div>
+
+                    <div class="bg-black p-4 border-l-4 border-yellow-500 rounded font-mono text-xs text-slate-400">
+                        <strong class="text-yellow-400">Persistencia (/etc/network/interfaces):</strong><br>
+                        auto eth0<br>
+                        iface eth0 inet static<br>
+                        &nbsp;&nbsp;address 192.168.1.34<br>
+                        &nbsp;&nbsp;netmask 255.255.255.0
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULO 5 (Árbol de diagnóstico para el layout de 3 paneles) -->
+            <div id="mod5" class="module-content hidden space-y-6 animate-[fadeIn_0.5s]">
+                <h2 class="font-bold text-white border-b border-rose-900 pb-2">Diagnóstico y Troubleshooting</h2>
                 <div class="texto-lectura">
-                    <h2 class="font-bold text-white mb-2 border-b-2 border-slate-800 pb-4">Bienvenida e Introducción a la CLI</h2>
-                    <p class="text-slate-400 mt-4">Comprende la filosofía que separa a los usuarios convencionales de los administradores de sistemas avanzados.</p>
-                </div>
-
-                <!-- 1. Filosofía -->
-                <div class="space-y-6">
-                    <div class="texto-lectura">
-                        <h3 class="font-bold text-sky-400 flex items-center gap-3">
-                            <span class="text-[1.2em]">1.</span> Filosofía de Consola (CLI) vs. GUI
-                        </h3>
+                    <div class="bg-black p-4 rounded border border-slate-800 text-xs font-mono text-slate-400 overflow-x-auto">
+                        <strong class="text-rose-400">ÁRBOL DE FALLAS</strong><br><br>
+                        ¿IP de destino asignada?<br>
+                        ├── <span class="text-rose-400">[169.254.x.x]</span> ──> APIPA (Falla DHCP)<br>
+                        │   Solución: dhclient o /renew<br>
+                        └── <span class="text-emerald-400">[IP Válida]</span> ──> ¿Ping a Gateway?<br>
+                            ├── [No] ──> ARP Duplicado (arp -a)<br>
+                            └── [Sí] ──> Falla DNS (/etc/resolv.conf)
                     </div>
-                    
-                    <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
-                        <div class="texto-lectura">
-                            <h4 class="font-bold text-slate-200 mb-4 font-mono text-sky-300">ACRÓNIMOS CLAVE</h4>
-                            <ul class="space-y-3 text-slate-300 list-disc ml-6">
-                                <li><strong class="text-sky-400">CLI:</strong> Command Line Interface (Interfaz de Línea de Comandos).</li>
-                                <li><strong class="text-sky-400">GUI:</strong> Graphical User Interface (Interfaz Gráfica de Usuario).</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="texto-lectura text-slate-300 space-y-6">
-                        <p>
-                            <strong class="text-white">Explicación Teórica Profunda:</strong> La transición histórica de los sistemas operativos supuso el paso de entornos puramente textuales a sistemas gráficos. Mientras que la GUI oculta la complejidad del sistema mediante abstracciones visuales (iconos, menús desplegables), limita la velocidad, precisión y la capacidad de automatización del administrador de sistemas. La CLI se fundamenta en la transmisión de flujos de texto que se comunican directamente con el shell del sistema operativo. Esto permite la composición de comandos complejos mediante tuberías (pipelines) y el control absoluto del entorno.
-                        </p>
-                        <button data-cite="cite_1" class="cite-btn btn-glow-sky bg-sky-900/20 text-sky-400 px-4 py-2 rounded-lg text-lg font-bold flex items-center gap-2 w-max">
-                            <span class="pointer-events-none">📖</span> <span class="pointer-events-none">Ver Cita Bibliográfica</span>
-                        </button>
-
-                        <p>
-                            <strong class="text-white">Funcionamiento Interno:</strong> En el sistema operativo, la GUI actúa como un cliente del servidor gráfico que envía eventos de ratón y teclado, traduciéndolos a llamadas del sistema. En contraste, un intérprete de comandos o shell (como <code class="text-emerald-400 bg-black px-2 py-1 rounded border border-slate-800">CMD.EXE</code>, <code class="text-blue-400 bg-black px-2 py-1 rounded border border-slate-800">powershell.exe</code> o <code class="text-emerald-400 bg-black px-2 py-1 rounded border border-slate-800">/bin/bash</code>) lee directamente de la entrada estándar (stdin), interpreta sintácticamente la cadena, busca el binario correspondiente en las rutas del sistema (variable PATH), genera un proceso hijo mediante fork() e exec() y devuelve los resultados a la salida estándar (stdout).
-                        </p>
-                        <button data-cite="cite_2" class="cite-btn btn-glow-sky bg-sky-900/20 text-sky-400 px-4 py-2 rounded-lg text-lg font-bold flex items-center gap-2 w-max">
-                            <span class="pointer-events-none">📖</span> <span class="pointer-events-none">Ver Cita Bibliográfica</span>
-                        </button>
-                    </div>
-
-                    <!-- Estructura de flujo ASCII -->
-                    <div class="bg-black p-6 rounded-xl border border-slate-700 font-mono text-emerald-400 text-lg overflow-x-auto shadow-inner">
-                        <pre>
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                             ESTRUCTURA DE FLUJO                             │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  [CLI / Entrada Estándar (stdin)] ──> [Intérprete (Shell / CLR)]            │
-│                                              │                              │
-│  [Visualización de Salida] <── [Llamadas al Núcleo / Kernel] <──────────────┘
-└─────────────────────────────────────────────────────────────────────────────┘
-                        </pre>
+                    <div class="mt-6 space-y-2">
+                        <p class="text-sm text-slate-300"><code class="text-sky-300">ping</code> Verifica capa 3. <button data-cite="cite_5_1" class="cite-btn text-xs px-1">📖</button></p>
+                        <p class="text-sm text-slate-300"><code class="text-sky-300">traceroute</code> Mide saltos por TTL. <button data-cite="cite_5_2" class="cite-btn text-xs px-1">📖</button></p>
+                        <p class="text-sm text-slate-300"><code class="text-sky-300">netstat</code> Puertos TCP (LISTEN, ESTABLISHED). <button data-cite="cite_5_3" class="cite-btn text-xs px-1">📖</button></p>
                     </div>
                 </div>
+            </div>
+            
+        </section>
 
-                <!-- 2. Comparativa -->
-                <div class="space-y-6 pt-8 border-t border-slate-800">
-                    <div class="texto-lectura">
-                        <h3 class="font-bold text-sky-400 flex items-center gap-3">
-                            <span class="text-[1.2em]">2.</span> Comparativa: CMD vs. PowerShell vs. Bash
-                        </h3>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 gap-6 texto-lectura">
-                        <!-- CMD -->
-                        <div class="bg-slate-900 p-6 rounded-xl border-l-4 border-slate-500">
-                            <h4 class="font-bold text-white mb-2">Windows CMD (Símbolo del Sistema)</h4>
-                            <p class="text-slate-300"><strong class="text-slate-400">Sintaxis:</strong> Basada en comandos internos históricos de MS-DOS.</p>
-                            <p class="text-slate-300 mt-2"><strong class="text-slate-400">Paradigma:</strong> Orientado a procesamiento de texto plano y ejecución secuencial de archivos por lotes (batch files).</p>
-                            <button data-cite="cite_3" class="cite-btn btn-glow-sky bg-sky-900/20 text-sky-400 px-3 py-1.5 rounded-lg text-base font-bold mt-4">📖 Cita</button>
-                        </div>
-
-                        <!-- PowerShell -->
-                        <div class="bg-blue-950/30 p-6 rounded-xl border-l-4 border-blue-500">
-                            <h4 class="font-bold text-blue-400 mb-2">Windows PowerShell (PS)</h4>
-                            <p class="text-slate-300"><strong class="text-blue-300">Sintaxis:</strong> Cmdlets estructurados bajo nomenclatura Verbo-Sustantivo (ej. <code class="bg-black px-1 rounded border border-slate-800">Get-NetIPAddress</code>).</p>
-                            <p class="text-slate-300 mt-2"><strong class="text-blue-300">Paradigma:</strong> Orientado a objetos basados en Microsoft .NET (CLR). Transmite instancias completas de objetos, evitando el parsing complejo de texto simple.</p>
-                            <button data-cite="cite_4" class="cite-btn btn-glow-sky bg-sky-900/20 text-sky-400 px-3 py-1.5 rounded-lg text-base font-bold mt-4">📖 Cita</button>
-                        </div>
-
-                        <!-- Bash -->
-                        <div class="bg-emerald-950/20 p-6 rounded-xl border-l-4 border-emerald-500">
-                            <h4 class="font-bold text-emerald-400 mb-2">Linux Bash (Bourne Again SHell)</h4>
-                            <p class="text-slate-300"><strong class="text-emerald-300">Sintaxis:</strong> Comandos modulares y utilidades GNU independientes.</p>
-                            <p class="text-slate-300 mt-2"><strong class="text-emerald-300">Paradigma:</strong> Filosofía Unix de "hacer una sola cosa bien" usando texto plano como interfaz universal. Enfocado fuertemente en redirección de I/O.</p>
-                            <button data-cite="cite_5" class="cite-btn btn-glow-sky bg-sky-900/20 text-sky-400 px-3 py-1.5 rounded-lg text-base font-bold mt-4">📖 Cita</button>
-                        </div>
-                    </div>
+        <!-- PANEL CENTRAL (Oculto por defecto, se abre 40% en Módulo 5) -->
+        <section id="center-panel" class="w-0 hidden overflow-hidden bg-[#050505] border-l border-slate-800 transition-all duration-500 ease-in-out relative flex-col justify-center items-center">
+            <div class="p-8 text-center w-full min-w-[300px]">
+                <h3 class="text-2xl font-mono text-slate-500 mb-8 tracking-widest">MONITOR DE RED</h3>
+                
+                <!-- Alerta Dinámica -->
+                <div id="alert-box" class="bg-rose-950/40 border-2 border-rose-500 p-8 rounded-xl alert-pulse-rose transition-colors duration-500">
+                    <div class="text-5xl mb-4" id="alert-icon">⚠️</div>
+                    <h2 class="text-2xl font-bold text-rose-500 font-mono mb-2" id="alert-title">FALLA DHCP: APIPA DETECTADO</h2>
+                    <p class="text-rose-300 font-mono text-xl bg-black px-4 py-2 inline-block rounded" id="alert-ip">IP: 169.254.15.22</p>
+                    <p class="mt-6 text-slate-400 text-sm">Resuelve el conflicto ejecutando el comando de renovación de concesión en la terminal adyacente.</p>
                 </div>
-
-                <!-- 3. Errores y Diagnóstico -->
-                <div class="space-y-6 pt-8 border-t border-slate-800 pb-12">
-                    <div class="texto-lectura">
-                        <h3 class="font-bold text-rose-400 flex items-center gap-3">
-                            <span class="text-[1.2em]">3.</span> Errores Comunes y Soluciones
-                        </h3>
-                    </div>
-                    
-                    <div class="bg-rose-950/20 p-6 rounded-xl border border-rose-900/50 texto-lectura text-slate-300">
-                        <p><strong class="text-rose-400">Error:</strong> <code class="bg-black text-rose-300 px-2 py-1 rounded border border-rose-900">"El sistema no puede encontrar la ruta especificada"</code> o <code class="bg-black text-rose-300 px-2 py-1 rounded border border-rose-900">"Command not found"</code>.</p>
-                        
-                        <p class="mt-4"><strong class="text-orange-400">Causa Raíz:</strong> El ejecutable invocado no se encuentra en las rutas definidas dentro del entorno de variables globales del sistema (PATH).</p>
-                        
-                        <div class="mt-6 space-y-4">
-                            <strong class="text-emerald-400">Solución Paso a Paso:</strong>
-                            <ol class="list-decimal pl-8 space-y-3">
-                                <li>
-                                    En Windows (CMD), verificar el contenido de %PATH% con:<br>
-                                    <code class="bg-black px-2 py-1 rounded text-sky-300 border border-slate-800 mt-1 inline-block">echo %PATH%</code>
-                                </li>
-                                <li>
-                                    En Linux (Bash), verificar $PATH con:<br>
-                                    <code class="bg-black px-2 py-1 rounded text-emerald-300 border border-slate-800 mt-1 inline-block">echo $PATH</code>
-                                    <button data-cite="cite_6" class="cite-btn btn-glow-sky bg-sky-900/20 text-sky-400 px-2 py-1 rounded text-sm font-bold ml-2 relative -top-1">📖 Cita</button>
-                                </li>
-                                <li class="pt-2">
-                                    Añadir temporal o permanentemente la ruta al ejecutable:<br>
-                                    <span class="text-sky-300 font-mono text-[0.8em] block mt-2">Windows: set PATH=%PATH%;C:\Ruta\Al\Ejecutable</span>
-                                    <button data-cite="cite_7" class="cite-btn btn-glow-sky bg-sky-900/20 text-sky-400 px-2 py-1 rounded text-sm font-bold mt-2">📖 Cita</button>
-                                    <br>
-                                    <span class="text-emerald-300 font-mono text-[0.8em] block mt-4">Linux: export PATH=$PATH:/ruta/al/ejecutable</span>
-                                    <button data-cite="cite_8" class="cite-btn btn-glow-sky bg-sky-900/20 text-sky-400 px-2 py-1 rounded text-sm font-bold mt-2">📖 Cita</button>
-                                </li>
-                            </ol>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </section>
 
-        <!-- =========================================================
-             PANEL DERECHO: CONSOLA INTERACTIVA (40%)
-             ========================================================= -->
-        <section class="w-[40%] bg-slate-900 border-l border-sky-900/50 flex flex-col relative z-10 shadow-[-10px_0_20px_rgba(0,0,0,0.5)]">
+        <!-- PANEL DERECHO (Terminal - 40% o 30%) -->
+        <section id="right-panel" class="w-[40%] bg-black border-l border-sky-900/50 flex flex-col relative z-10 transition-all duration-500 ease-in-out shadow-[-10px_0_20px_rgba(0,0,0,0.5)]">
             
-            <!-- Selector de Consolas -->
-            <div class="bg-slate-950 p-4 border-b border-slate-800 flex justify-between items-center gap-2">
+            <div class="bg-slate-950 p-3 border-b border-slate-800 flex justify-between items-center shrink-0">
                 <div class="flex gap-2">
-                    <button data-term="cmd" class="term-tab-btn btn-glow-sky bg-slate-800 text-slate-300 font-bold font-mono px-4 py-2 rounded text-sm active-tab border-sky-500 text-sky-400">CMD</button>
-                    <button data-term="ps" class="term-tab-btn btn-glow-blue bg-slate-800 text-slate-300 font-bold font-mono px-4 py-2 rounded text-sm border-transparent">PowerShell</button>
-                    <button data-term="bash" class="term-tab-btn btn-glow-emerald bg-slate-800 text-slate-300 font-bold font-mono px-4 py-2 rounded text-sm border-transparent">Bash</button>
+                    <button data-term="cmd" class="term-tab-btn btn-glow-sky bg-slate-800 text-sky-400 text-xs px-3 py-1 font-mono rounded active-tab border-sky-500">CMD</button>
+                    <button data-term="ps" class="term-tab-btn btn-glow-blue bg-slate-800 text-slate-400 text-xs px-3 py-1 font-mono rounded border-transparent">PS</button>
+                    <button data-term="bash" class="term-tab-btn btn-glow-emerald bg-slate-800 text-slate-400 text-xs px-3 py-1 font-mono rounded border-transparent">BASH</button>
                 </div>
-                <div class="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse" title="Terminal Lista"></div>
             </div>
 
-            <!-- Panel de Misión Interactiva -->
-            <div class="bg-slate-800/50 p-4 border-b border-slate-800">
-                <p class="text-sky-400 font-bold text-sm mb-1">MISIÓN ACTUAL:</p>
-                <p id="mission-text" class="text-slate-300 text-lg">Consulta la variable de entorno PATH en el sistema actual.</p>
-                <p id="hint-text" class="text-slate-500 text-sm font-mono mt-1">Hint: Usa 'echo %PATH%'</p>
+            <div class="bg-slate-900/80 p-3 border-b border-slate-800 shrink-0">
+                <p class="text-sky-400 font-bold text-[10px] mb-1">MISIÓN ACTUAL:</p>
+                <p id="mission-text" class="text-slate-300 text-sm">Consulta la variable de entorno PATH.</p>
             </div>
 
-            <!-- Área de la Terminal (Motor de Memoria) -->
-            <div id="terminal-container" class="flex-grow bg-black p-6 font-mono text-xl overflow-y-auto custom-scroll relative border-2 border-transparent transition-all duration-300">
-                
+            <div id="terminal-container" class="flex-grow p-4 font-mono text-base overflow-y-auto custom-scroll relative border-2 border-transparent transition-all duration-300">
                 <div id="terminal-output" class="whitespace-pre-wrap mb-2">
-                    <div class="text-slate-500">Microsoft Windows [Version 10.0.19045.3324]</div>
-                    <div class="text-slate-500">(c) Microsoft Corporation. All rights reserved.</div>
-                    <br>
+                    <div class="text-slate-500">Microsoft Windows [Version 10.0.19045.3324]<br><br></div>
                 </div>
-                
                 <div class="flex items-center gap-2">
                     <span id="prompt-text" class="text-slate-300 shrink-0">C:\Users\Estudiante&gt;</span>
-                    <input type="text" id="cmd-input" class="bg-transparent border-none outline-none text-white flex-grow font-mono text-xl w-full caret-transparent" autocomplete="off" spellcheck="false" autofocus>
-                    <span class="w-2.5 h-6 bg-slate-400 cursor-blink -ml-2"></span>
+                    <input type="text" id="cmd-input" class="bg-transparent border-none outline-none text-white flex-grow font-mono w-full caret-transparent" autocomplete="off" spellcheck="false" autofocus>
+                    <span class="w-2.5 h-5 bg-slate-400 cursor-blink -ml-2"></span>
                 </div>
             </div>
             
-        </section>
-    <!-- =========================================================
-             MÓDULO 1
-             ========================================================= -->
-        <section id="mod1" class="hidden w-[60%] h-full overflow-y-auto custom-scroll p-10 bg-slate-950 absolute inset-0">
-            
-            <div class="max-w-4xl mx-auto space-y-12 animate-[fadeIn_0.5s_ease-out]">
-                
-                <div class="texto-lectura">
-                    <h2 class="font-bold text-white mb-2 border-b-2 border-slate-800 pb-4">Módulo 1: Primer Contacto</h2>
-                    <p class="text-slate-400 mt-4">Comandos fundamentales para la supervivencia en la terminal.</p>
-                </div>
-
-                <!-- 1. Limpieza -->
-                <div class="space-y-4">
-                    <div class="texto-lectura">
-                        <h3 class="font-bold text-sky-400 flex items-center gap-3">
-                            <span class="text-[1.2em]">1.</span> Limpieza de Terminal: cls vs. clear
-                        </h3>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-6 texto-lectura">
-                        <div class="bg-slate-900 p-6 rounded-xl border-l-4 border-sky-500">
-                            <h4 class="font-bold text-sky-400 mb-2 font-mono">Windows: cls</h4>
-                            <p class="text-slate-300"><strong class="text-sky-300">Acrónimo:</strong> Clear Screen.</p>
-                            <p class="text-slate-400 text-sm mt-2">Interactúa con la consola de Win32 borrando el búfer de caracteres del host (conhost.exe) y posicionando el cursor en las coordenadas (0,0).</p>
-                        </div>
-                        <div class="bg-slate-900 p-6 rounded-xl border-l-4 border-emerald-500">
-                            <h4 class="font-bold text-emerald-400 mb-2 font-mono">Linux: clear</h4>
-                            <p class="text-slate-400 text-sm mt-2">Consulta la base de datos terminfo para obtener las secuencias de escape ANSI correctas para el tipo de terminal activa y limpiar el área visible.</p>
-                            <button data-cite="cite_m1_1" class="cite-btn btn-glow-sky bg-sky-900/20 text-sky-400 px-3 py-1.5 rounded-lg text-sm font-bold mt-4">📖 Cita</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. Listar Directorios -->
-                <div class="space-y-6 pt-8 border-t border-slate-800">
-                    <div class="texto-lectura">
-                        <h3 class="font-bold text-sky-400 flex items-center gap-3">
-                            <span class="text-[1.2em]">2.</span> Listar Directorios: dir vs. ls
-                        </h3>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-6 texto-lectura">
-                        <!-- DIR -->
-                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
-                            <h4 class="font-bold text-white mb-2 font-mono">CMD: <span class="text-sky-400">dir [/A] [/S] [/B]</span></h4>
-                            <ul class="text-slate-300 text-sm space-y-3 mt-4">
-                                <li><code class="text-sky-300">/A</code> Muestra archivos con atributos específicos (ocultos). <button data-cite="cite_m1_2" class="cite-btn text-xs px-2 py-1">📖</button></li>
-                                <li><code class="text-sky-300">/S</code> Lista recursivamente en subdirectorios. <button data-cite="cite_m1_3" class="cite-btn text-xs px-2 py-1">📖</button></li>
-                                <li><code class="text-sky-300">/B</code> Formato básico sin encabezados. <button data-cite="cite_m1_4" class="cite-btn text-xs px-2 py-1">📖</button></li>
-                            </ul>
-                        </div>
-                        <!-- LS -->
-                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
-                            <h4 class="font-bold text-white mb-2 font-mono">Bash: <span class="text-emerald-400">ls [-l] [-a] [-h]</span></h4>
-                            <ul class="text-slate-300 text-sm space-y-3 mt-4">
-                                <li><code class="text-emerald-300">-l</code> Formato largo (permisos, dueño, peso, fecha). <button data-cite="cite_m1_5" class="cite-btn text-xs px-2 py-1">📖</button></li>
-                                <li><code class="text-emerald-300">-a</code> Muestra archivos ocultos (inician con punto). <button data-cite="cite_m1_6" class="cite-btn text-xs px-2 py-1">📖</button></li>
-                                <li><code class="text-emerald-300">-h</code> Tamaños legibles por humanos (K, M, G). <button data-cite="cite_m1_7" class="cite-btn text-xs px-2 py-1">📖</button></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- ASCII LS Desglosado -->
-                    <div class="bg-black p-6 rounded-xl border border-slate-700 font-mono text-emerald-400 text-sm overflow-x-auto shadow-inner">
-                        <p class="text-slate-400 mb-2">// OUTPUT DESGLOSADO (Linux "ls -lh")</p>
-<pre>
-drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
-│└┬──────┘ │ └┬┘  └┬┘  └┬┘  └──────┬─────┘ └───┬───┘
-│ │        │  │    │    │          │           └─ Nombre del recurso
-│ │        │  │    │    │          └─ Fecha última modificación
-│ │        │  │    │    └─ Tamaño legible (4 Kilobytes)
-│ │        │  │    └─ Grupo propietario (root)
-│ │        │  └─ Usuario propietario (root)
-│ │        └─ Número de enlaces físicos al nodo
-│ └─ Permisos detallados: r (lectura), w (escritura), x (ejecución)
-└─ Tipo de recurso: d (directorio), - (archivo), l (enlace simbólico)
-</pre>
-                    </div>
-                </div>
-
-                <!-- 3. Visualizar, Copiar, Mover (Comparativas rápidas) -->
-                <div class="space-y-6 pt-8 border-t border-slate-800">
-                    <div class="grid grid-cols-1 gap-6 texto-lectura">
-                        
-                        <!-- Visualizar -->
-                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
-                            <h3 class="font-bold text-sky-400 mb-4">3. Visualizar Archivos</h3>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <p class="text-white font-mono mb-1">Win (CMD): <code class="text-sky-400">type</code> <button data-cite="cite_m1_8" class="cite-btn text-xs px-2 py-1">📖</button></p>
-                                    <p class="text-white font-mono">Win (PS): <code class="text-blue-400">Get-Content</code> <button data-cite="cite_m1_9" class="cite-btn text-xs px-2 py-1">📖</button></p>
-                                </div>
-                                <div>
-                                    <p class="text-white font-mono mb-1">Linux: <code class="text-emerald-400">cat</code> (vuelca todo)</p>
-                                    <p class="text-white font-mono">Linux: <code class="text-emerald-400">less</code> (interactivo) <button data-cite="cite_m1_10" class="cite-btn text-xs px-2 py-1">📖</button></p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Copiar / Mover -->
-                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
-                            <h3 class="font-bold text-sky-400 mb-4">4. Copiado y Movimiento</h3>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="border-r border-slate-700 pr-4">
-                                    <p class="text-white font-mono mb-2 text-sm"><span class="text-sky-500">Win:</span> copy [/Y] [/V] | move [/Y] <button data-cite="cite_m1_11" class="cite-btn text-xs px-2 py-1">📖</button></p>
-                                    <p class="text-slate-400 text-sm"><code class="text-sky-300">/V</code> Verifica si se escribieron bien. <button data-cite="cite_m1_13" class="cite-btn text-xs px-2 py-1">📖</button></p>
-                                </div>
-                                <div class="pl-2">
-                                    <p class="text-white font-mono mb-2 text-sm"><span class="text-emerald-500">Lin:</span> cp [-r] [-i] [-u] | mv [-i] [-u] <button data-cite="cite_m1_12" class="cite-btn text-xs px-2 py-1">📖</button></p>
-                                    <p class="text-slate-400 text-sm"><code class="text-emerald-300">-r</code> Recursivo <button data-cite="cite_m1_14" class="cite-btn text-xs px-2 py-1">📖</button> | <code class="text-emerald-300">-i</code> Interactivo <button data-cite="cite_m1_15" class="cite-btn text-xs px-2 py-1">📖</button> | <code class="text-emerald-300">-u</code> Actualizar <button data-cite="cite_m1_16" class="cite-btn text-xs px-2 py-1">📖</button></p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Privilegios -->
-                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
-                            <h3 class="font-bold text-sky-400 mb-4">5. Elevación de Privilegios</h3>
-                            <div class="space-y-4">
-                                <p class="text-slate-300"><strong class="text-sky-400 font-mono">Windows runas:</strong> Ejecuta herramientas con permisos de otro usuario (ej. administrador). <button data-cite="cite_m1_17" class="cite-btn text-xs px-2 py-1">📖</button></p>
-                                <p class="text-slate-300"><strong class="text-emerald-400 font-mono">Linux su:</strong> (Substitute User) Cambia de sesión a superusuario. <button data-cite="cite_m1_18" class="cite-btn text-xs px-2 py-1">📖</button></p>
-                                <p class="text-slate-300"><strong class="text-emerald-400 font-mono">Linux sudo:</strong> Ejecuta un comando puntual como superusuario basándose en /etc/sudoers.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 6. Acceso Remoto (Misión) -->
-                <div class="space-y-6 pt-8 border-t border-slate-800 pb-12">
-                    <div class="texto-lectura">
-                        <h3 class="font-bold text-rose-400 flex items-center gap-3">
-                            <span class="text-[1.2em]">6.</span> Acceso Remoto: Telnet vs. SSH
-                        </h3>
-                    </div>
-                    
-                    <div class="bg-indigo-950/20 p-6 rounded-xl border border-indigo-900/50 texto-lectura text-slate-300">
-                        <p><strong class="text-indigo-400">Acrónimo:</strong> <span class="text-white">SSH = Secure Shell</span></p>
-                        
-                        <p class="mt-4"><strong class="text-orange-400">Explicación Teórica:</strong> Telnet transmite contraseñas en texto plano, vulnerable a rastreos (sniffing). SSH proporciona un canal cifrado (puerto TCP 22) usando criptografía de clave pública. <button data-cite="cite_m1_19" class="cite-btn text-xs px-2 py-1 relative -top-1">📖</button></p>
-                        
-                        <div class="mt-6 p-4 border-l-4 border-emerald-500 bg-black rounded">
-                            <p class="text-emerald-400 font-mono">> MISIÓN DEL MÓDULO (Pruébalo en la terminal):</p>
-                            <p class="text-slate-400 text-sm mt-2">Conéctate al servidor Linux escribiendo: <code class="text-white">ssh admin42@192.168.1.30</code></p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
         </section>
     </main>
 
-    <!-- =========================================================
-         MODAL EMERGENTE (CITAS BIBLIOGRÁFICAS)
-         ========================================================= -->
-    <div id="citation-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 transition-opacity duration-300 opacity-0">
-        <div class="glass-panel w-[600px] p-8 rounded-2xl shadow-[0_0_30px_rgba(14,165,233,0.2)] transform scale-95 transition-transform duration-300" id="modal-content">
+    <!-- MODAL DE CITAS -->
+    <div id="citation-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/70 transition-opacity duration-300 opacity-0">
+        <div class="glass-panel w-[600px] p-8 rounded-2xl shadow-[0_0_40px_rgba(14,165,233,0.3)] transform scale-95 transition-transform duration-300" id="modal-content">
             <div class="flex justify-between items-start mb-6">
-                <div class="flex items-center gap-3">
-                    <span class="text-3xl">📚</span>
-                    <h3 class="text-2xl font-bold text-sky-400 font-mono">Referencia Bibliográfica</h3>
-                </div>
+                <h3 class="text-2xl font-bold text-sky-400 font-mono">📚 Referencia</h3>
                 <button id="close-cite" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
             </div>
-            
-            <div class="space-y-4 text-xl text-slate-200">
-                <div class="grid grid-cols-[100px_1fr] gap-2 items-baseline border-b border-slate-700/50 pb-2">
-                    <span class="text-sky-500 font-bold">Libro:</span>
-                    <span id="cite-book" class="italic text-white"></span>
-                </div>
-                <div class="grid grid-cols-[100px_1fr] gap-2 items-baseline border-b border-slate-700/50 pb-2">
-                    <span class="text-sky-500 font-bold">Autor:</span>
-                    <span id="cite-author" class="text-slate-300"></span>
-                </div>
-                <div class="grid grid-cols-[100px_1fr] gap-2 items-baseline border-b border-slate-700/50 pb-2">
-                    <span class="text-sky-500 font-bold">Año:</span>
-                    <span id="cite-year" class="text-slate-300"></span>
-                </div>
-                <div class="grid grid-cols-[100px_1fr] gap-2 items-baseline border-b border-slate-700/50 pb-2">
-                    <span class="text-sky-500 font-bold">Página:</span>
-                    <span id="cite-page" class="text-emerald-400 font-mono font-bold"></span>
-                </div>
+            <div class="space-y-2 text-lg text-slate-200">
+                <div><span class="text-sky-500 font-bold w-24 inline-block">Libro:</span> <span id="cite-book" class="italic text-white"></span></div>
+                <div><span class="text-sky-500 font-bold w-24 inline-block">Autor:</span> <span id="cite-author" class="text-slate-300"></span></div>
+                <div><span class="text-sky-500 font-bold w-24 inline-block">Página:</span> <span id="cite-page" class="text-emerald-400 font-mono font-bold"></span> (<span id="cite-year"></span>)</div>
             </div>
-            
-            <div class="mt-6 bg-slate-900/80 p-5 rounded-lg border border-slate-700">
-                <p class="text-slate-400 text-sm uppercase tracking-widest font-bold mb-2">Extracto / Contexto</p>
-                <p id="cite-text" class="text-lg text-slate-300 italic border-l-4 border-sky-500 pl-4"></p>
-            </div>
-            
-            <div class="mt-8 text-center">
-                <button id="close-cite-btn" class="btn-glow-sky bg-sky-900 text-sky-300 font-bold px-8 py-3 rounded-lg text-lg tracking-wider">CERRAR</button>
+            <div class="mt-6 bg-slate-900/90 p-5 rounded border border-slate-700">
+                <p id="cite-text" class="text-slate-300 italic border-l-4 border-sky-500 pl-4"></p>
             </div>
         </div>
     </div>
 
-    <!-- =========================================================
-         JAVASCRIPT LOGIC & WEB AUDIO API
-         ========================================================= -->
     <script>
-        // ----------------------------------------------------
-        // 1. SISTEMA DE AUDIO (8-bit Synth)
-        // ----------------------------------------------------
+        // 1. MOTOR AUDIO 8-BIT
         const AudioEngine = {
             ctx: null,
             init: function() {
@@ -492,373 +311,277 @@ drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
                 const now = this.ctx.currentTime;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
+                osc.connect(gain); gain.connect(this.ctx.destination);
 
                 if (type === 'blip') { 
-                    osc.type = 'square';
-                    osc.frequency.setValueAtTime(600, now);
-                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.type = 'square'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
                     osc.start(now); osc.stop(now + 0.1);
-                } 
-                else if (type === 'type_tick') { 
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(800, now);
-                    gain.gain.setValueAtTime(0.05, now);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                } else if (type === 'type_tick') { 
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
+                    gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
                     osc.start(now); osc.stop(now + 0.05);
-                }
-                else if (type === 'error_buzz') { 
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(150, now);
-                    osc.frequency.linearRampToValueAtTime(100, now + 0.3);
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                } else if (type === 'error_buzz') { 
+                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+                    gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
                     osc.start(now); osc.stop(now + 0.3);
-                }
-                else if (type === 'success') { 
-                    osc.type = 'square';
-                    osc.frequency.setValueAtTime(440, now);
-                    osc.frequency.setValueAtTime(659.25, now + 0.1); 
-                    osc.frequency.setValueAtTime(880, now + 0.2); 
-                    gain.gain.setValueAtTime(0.1, now);
-                    gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                } else if (type === 'success') { 
+                    osc.type = 'square'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(659.25, now + 0.1); osc.frequency.setValueAtTime(880, now + 0.2); 
+                    gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
                     osc.start(now); osc.stop(now + 0.4);
                 }
             }
         };
+        document.addEventListener('click', (e) => { if(e.target.closest('button')) AudioEngine.play('blip'); });
+        document.addEventListener('keydown', (e) => { if(e.target.tagName === 'INPUT' && e.key !== 'Enter') AudioEngine.play('type_tick'); });
 
-        document.addEventListener('click', (e) => {
-            if(e.target.closest('button')) AudioEngine.play('blip');
-        });
-        document.addEventListener('keydown', (e) => {
-            if(e.target.tagName === 'INPUT' && e.key !== 'Enter') AudioEngine.play('type_tick');
-        });
-
-
-        // ----------------------------------------------------
-        // 2. TIPOGRAFÍA DINÁMICA
-        // ----------------------------------------------------
-        const fontSlider = document.getElementById('font-slider');
-        const fontDisplay = document.getElementById('font-size-display');
-        fontSlider.addEventListener('input', (e) => {
-            const size = e.target.value;
-            fontDisplay.innerText = size;
-            document.documentElement.style.setProperty('--text-base-size', `${size}px`);
+        // 2. TEXTO Y CIDR
+        document.getElementById('font-slider').addEventListener('input', (e) => {
+            document.getElementById('font-size-display').innerText = e.target.value;
+            document.documentElement.style.setProperty('--text-base-size', `${e.target.value}px`);
         });
 
+        document.getElementById('cidr-slider').addEventListener('input', (e) => {
+            const cidr = parseInt(e.target.value);
+            document.getElementById('cidr-val').innerText = cidr;
+            let maskStr = "".padStart(cidr, "1").padEnd(32, "0");
+            let maskArr = [maskStr.slice(0,8), maskStr.slice(8,16), maskStr.slice(16,24), maskStr.slice(24,32)];
+            let maskDec = maskArr.map(b => parseInt(b, 2));
+            document.getElementById('mask-bin').innerText = maskArr.join('.');
+            document.getElementById('mask-dec').innerText = maskDec.join('.');
+            const ipDec = [192, 168, 1, 135];
+            let netDec = ipDec.map((val, i) => val & maskDec[i]);
+            document.getElementById('net-dec').innerText = netDec.join('.');
+        });
 
-         // ----------------------------------------------------
-        // 3. SISTEMA DE CITAS INTERACTIVAS Y BASE DE DATOS
-        // ----------------------------------------------------
+        // 3. CITAS DB
         const citationsDB = {
-            // Módulo 0
-            cite_1: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. xvi", extract: "La CLI se fundamenta en la transmisión de flujos de texto que se comunican directamente con el shell del sistema operativo..." },
-            cite_2: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 135", extract: "Un intérprete de comandos lee directamente de la entrada estándar, busca el binario, genera un proceso hijo y devuelve resultados..." },
-            cite_3: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 57", extract: "Paradigma orientado a procesamiento de texto plano y ejecución secuencial de archivos por lotes." },
-            cite_4: { book: "Windows PowerShell Networking Guide", author: "Ed Wilson", year: "2018", page: "p. 10", extract: "Orientado a objetos basados en .NET. No canaliza cadenas de texto simple, sino instancias completas de objetos." },
-            cite_5: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 304", extract: "Filosofía Unix de hacer una sola cosa bien y utilizar texto plano como la interfaz universal." },
-            cite_6: { book: "Linux Basics for Hackers", author: "OccupyTheWeb", year: "2019", page: "p. 74", extract: "Verificar el entorno de variables globales con echo $PATH para identificar binarios faltantes." },
-            cite_7: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 37", extract: "Añadir de forma temporal o permanente la ruta al ejecutable usando set PATH=..." },
-            cite_8: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 131", extract: "Modificar el entorno exportando la variable PATH para incluir nuevas rutas a binarios." },
-            // Módulo 1
-            cite_m1_1: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 271", extract: "clear consulta la base de datos terminfo para obtener las secuencias de escape ANSI correctas para el tipo de terminal activa (por ejemplo, \\033[2J y \\033[H)." },
-            cite_m1_2: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 90", extract: "/A: Muestra archivos con atributos específicos (ocultos, de sistema)." },
-            cite_m1_3: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 73", extract: "/S: Muestra los archivos en el directorio especificado y en todos los subdirectorios de manera recursiva." },
-            cite_m1_4: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 83", extract: "/B: Usa formato básico sin encabezados ni resúmenes de almacenamiento." },
-            cite_m1_5: { book: "Linux Basics for Hackers", author: "OccupyTheWeb", year: "2019", page: "p. 230", extract: "-l: Formato de listado largo, que expone los permisos, enlaces, dueño, grupo, tamaño y marca de tiempo." },
-            cite_m1_6: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 13", extract: "-a: Lista todos los elementos, incluidos los ocultos que inician con un punto (.)." },
-            cite_m1_7: { book: "Linux Basics for Hackers", author: "OccupyTheWeb", year: "2019", page: "p. 230", extract: "-h: Traduce tamaños de archivo a formato legible por humanos (ej. 4K, 12M)." },
-            cite_m1_8: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 57", extract: "Sintaxis: type [ruta_archivo] para visualizar contenido en CMD." },
-            cite_m1_9: { book: "Windows PowerShell Networking Guide", author: "Ed Wilson", year: "2018", page: "p. 156", extract: "Sintaxis: Get-Content [ruta_archivo] para procesar objetos de texto en PS." },
-            cite_m1_10: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 53", extract: "cat vuelca el contenido completo, less permite navegación interactiva paginada." },
-            cite_m1_11: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 25-36", extract: "Uso de copy y move para gestión de archivos en Windows CMD." },
-            cite_m1_12: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 28-30", extract: "Uso de cp y mv para copiado y movimiento en sistemas Unix." },
-            cite_m1_13: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 73", extract: "/V: Verifica si los nuevos archivos se escriben correctamente en el disco." },
-            cite_m1_14: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 275", extract: "-r: Copia directorios completos de manera recursiva." },
-            cite_m1_15: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 274", extract: "-i: Modo interactivo; solicita confirmación antes de sobrescribir archivos existentes." },
-            cite_m1_16: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 275", extract: "-u: Actualización; copia únicamente si el archivo origen es más nuevo que el destino." },
-            cite_m1_17: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 118", extract: "runas: Ejecuta herramientas con permisos de otro usuario (grupo administradores)." },
-            cite_m1_18: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 101", extract: "su: Substitute user, cambia a superusuario. sudo: Ejecuta comandos bajo políticas de /etc/sudoers." },
-            cite_m1_19: { book: "Computer Networks", author: "Tanenbaum et al.", year: "2021", page: "p. 23", extract: "Telnet es vulnerable a packet sniffing. SSH provee un canal cifrado TCP 22 con criptografía." },
-            cite_m1_20: { book: "Linux System Administration", author: "Paul Cobbaut", year: "2015", page: "p. 257", extract: "Tras la autenticación SSH, el shell remoto inicia y presenta el prompt configurado por el host destino." }
+            cite_0_1: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. xvi", extract: "La CLI se fundamenta en la transmisión de flujos de texto que se comunican directamente con el shell del sistema operativo." },
+            cite_0_2: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 135", extract: "Un intérprete de comandos lee de stdin, busca el binario, genera un proceso hijo y devuelve resultados a stdout." },
+            cite_0_3: { book: "Windows Administration", author: "Mueller", year: "2007", page: "p. 57", extract: "Paradigma orientado a procesamiento de texto plano y ejecución secuencial." },
+            cite_0_4: { book: "PowerShell Networking Guide", author: "Ed Wilson", year: "2018", page: "p. 10", extract: "Orientado a objetos basados en .NET. No canaliza texto simple, sino objetos." },
+            cite_0_5: { book: "The Linux Command Line", author: "Shotts", year: "2019", page: "p. 304", extract: "Filosofía Unix de hacer una sola cosa bien usando texto plano." },
+            cite_0_6: { book: "Linux Basics for Hackers", author: "OccupyTheWeb", year: "2019", page: "p. 74", extract: "Verificar el entorno con echo $PATH para identificar binarios faltantes." },
+            cite_1_1: { book: "The Linux Command Line", author: "Shotts", year: "2019", page: "p. 271", extract: "cls interactúa con conhost borrando el búfer; clear usa ANSI escape." },
+            cite_1_2: { book: "The Linux Command Line", author: "Shotts", year: "2019", page: "p. 271", extract: "clear consulta terminfo para secuencias ANSI." },
+            cite_1_3: { book: "Windows Admin", author: "Mueller", year: "2007", page: "p. 73", extract: "/S: Muestra recursivamente subdirectorios." },
+            cite_1_7: { book: "Linux Basics", author: "OccupyTheWeb", year: "2019", page: "p. 230", extract: "-h: Traduce tamaños a formato humano (K, M)." },
+            cite_1_8: { book: "Windows Admin", author: "Mueller", year: "2007", page: "p. 57", extract: "Sintaxis: type [ruta] para visualizar contenido." },
+            cite_1_10: { book: "The Linux Command Line", author: "Shotts", year: "2019", page: "p. 53", extract: "cat vuelca contenido, less permite navegación paginada." },
+            cite_1_19: { book: "Computer Networks", author: "Tanenbaum et al.", year: "2021", page: "p. 23", extract: "Telnet es vulnerable a sniffing. SSH provee canal cifrado TCP 22." },
+            cite_2_1: { book: "Computer Networks", author: "Tanenbaum et al.", year: "2021", page: "p. 41", extract: "IPv4 usa 32 bits. IPv6 amplía a 128 bits hexadecimales." },
+            cite_2_2: { book: "Redes de computadoras", author: "Kurose y Ross", year: "2017", page: "p. 201", extract: "NAT mapea IPs privadas a pública reemplazando puerto/origen." },
+            cite_3_1: { book: "Windows Admin", author: "Mueller", year: "2007", page: "p. 90", extract: "ipconfig /all muestra MAC, DHCP y caché DNS." },
+            cite_3_2: { book: "Windows Admin", author: "Mueller", year: "2007", page: "p. 91", extract: "ipconfig /release envía DHCPRELEASE al servidor." },
+            cite_3_3: { book: "Windows Admin", author: "Mueller", year: "2007", page: "p. 91", extract: "ipconfig /renew solicita renovación DHCPDISCOVER." },
+            cite_3_4: { book: "PowerShell Networking", author: "Wilson", year: "2018", page: "p. 325", extract: "Get-NetAdapter lista hardware, ifIndex y estado." },
+            cite_3_5: { book: "PowerShell Networking", author: "Wilson", year: "2018", page: "p. 149", extract: "Requiere iniciar terminal con UAC administrador." },
+            cite_4_1: { book: "The Linux Command Line", author: "Shotts", year: "2019", page: "p. 289", extract: "ip a (iproute2) reemplaza a ifconfig mostrando asignaciones IP." },
+            cite_4_2: { book: "Linux System Admin", author: "Cobbaut", year: "2015", page: "p. 245", extract: "nmcli controla NetworkManager en distros modernas." },
+            cite_5_1: { book: "Linux System Admin", author: "Cobbaut", year: "2015", page: "p. 253", extract: "ping envía ICMP Echo Request para verificar estado activo." },
+            cite_5_2: { book: "Computer Networks", author: "Tanenbaum", year: "2021", page: "p. 22", extract: "traceroute traza ruta incrementando TTL (Time to Live)." },
+            cite_5_3: { book: "Computer Networks", author: "Tanenbaum", year: "2021", page: "p. 31", extract: "netstat muestra sockets TCP en estado LISTEN o ESTABLISHED." }
         };
 
         const modal = document.getElementById('citation-modal');
-        const modalContent = document.getElementById('modal-content');
-        
         document.querySelectorAll('.cite-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const targetBtn = e.target.closest('button');
-                const data = citationsDB[targetBtn.dataset.cite];
+                const data = citationsDB[e.target.dataset.cite];
                 if(data) {
                     document.getElementById('cite-book').innerText = data.book;
                     document.getElementById('cite-author').innerText = data.author;
                     document.getElementById('cite-year').innerText = data.year;
                     document.getElementById('cite-page').innerText = data.page;
                     document.getElementById('cite-text').innerText = data.extract;
-                    
                     modal.classList.remove('hidden');
-                    void modal.offsetWidth; // Trigger reflow
-                    modal.classList.remove('opacity-0');
-                    modalContent.classList.remove('scale-95');
-                    modalContent.classList.add('scale-100');
+                    setTimeout(() => { modal.classList.remove('opacity-0'); document.getElementById('modal-content').classList.remove('scale-95'); }, 10);
                 }
             });
         });
 
-        function closeModal() {
-            modal.classList.add('opacity-0');
-            modalContent.classList.remove('scale-100');
-            modalContent.classList.add('scale-95');
+        document.getElementById('close-cite').addEventListener('click', () => {
+            modal.classList.add('opacity-0'); document.getElementById('modal-content').classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
-        }
+        });
 
-        document.getElementById('close-cite').addEventListener('click', closeModal);
-        document.getElementById('close-cite-btn').addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-
-
-        // ----------------------------------------------------
-        // 4. LÓGICA DE NAVEGACIÓN Y MOTOR DE CONSOLA
-        // ----------------------------------------------------
+        // 4. LÓGICA DE NAVEGACIÓN Y TERMINAL
         let currentModule = 'mod0';
         let currentOS = 'cmd';
-        let isAwaitingSSHPassword = false;
+        let isAwaitingSSH = false;
+        let mod3_state = 0;
 
+        const leftPanel = document.getElementById('left-panel');
+        const centerPanel = document.getElementById('center-panel');
+        const rightPanel = document.getElementById('right-panel');
+        
         const inputField = document.getElementById('cmd-input');
         const outputDiv = document.getElementById('terminal-output');
         const promptText = document.getElementById('prompt-text');
         const termContainer = document.getElementById('terminal-container');
         const missionText = document.getElementById('mission-text');
-        const hintText = document.getElementById('hint-text');
 
-        // Configuración de Misiones y Terminales
-        const simulatedFileSystem = {
-            pathCmd: "C:\\Windows\\system32;C:\\Windows",
-            pathBash: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-        };
-
-        const moduleMissions = {
-            'mod0': {
-                mission: "Consulta la variable de entorno PATH en el sistema actual.",
-                hint: "Hint: Usa 'echo %PATH%' o 'echo $PATH'"
-            },
-            'mod1': {
-                mission: "Simula una conexión remota segura mediante SSH al servidor de prácticas.",
-                hint: "Hint: Usa 'ssh admin42@192.168.1.30'"
-            }
+        const moduleData = {
+            'mod0': { hint: "Consulta la ruta: 'echo %PATH%'" },
+            'mod1': { hint: "SSH remoto: 'ssh admin42@192.168.1.30'" },
+            'mod2': { hint: "Puerto SSH: Escribe solo '22'" },
+            'mod3': { hint: "Renovar DHCP: 'ipconfig /release' luego '/renew'" },
+            'mod4': { hint: "Kali: 'ifconfig wlan0 192.168.1.45 netmask 255.255.255.0'" },
+            'mod5': { hint: "Solucionar APIPA: 'ipconfig /renew' o 'dhclient eth0'" }
         };
 
         const consoleConfigs = {
-            'cmd': { prompt: 'C:\\Users\\Estudiante&gt;', color: 'text-slate-300', bgColor: 'bg-black', activeClass: 'border-sky-500 text-sky-400' },
-            'ps': { prompt: 'PS C:\\&gt;', color: 'text-white', bgColor: 'bg-blue-950/20', activeClass: 'border-blue-500 text-blue-400' },
-            'bash': { prompt: '<span class="text-emerald-400 font-bold">kali@admin</span><span class="text-white">:</span><span class="text-blue-400">~</span><span class="text-white">$</span>', color: 'text-emerald-100', bgColor: 'bg-emerald-950/10', activeClass: 'border-emerald-500 text-emerald-400' }
+            'cmd': { prompt: 'C:\\Users\\Estudiante&gt;', color: 'text-slate-300', activeClass: 'border-sky-500 text-sky-400' },
+            'ps': { prompt: 'PS C:\\&gt;', color: 'text-white', activeClass: 'border-blue-500 text-blue-400' },
+            'bash': { prompt: '<span class="text-emerald-400 font-bold">kali@admin</span><span class="text-white">:~$</span>', color: 'text-emerald-100', activeClass: 'border-emerald-500 text-emerald-400' }
         };
 
-        // Cambio de Módulos (Navegación Izquierda)
+        // Cambiar Módulo y gestionar Layout
         document.querySelectorAll('.mod-tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const targetMod = e.target.dataset.target;
-                
-                // Actualizar UI del Navbar
-                document.querySelectorAll('.mod-tab-btn').forEach(b => {
-                    b.classList.remove('active-tab', 'bg-sky-900/20', 'text-sky-400');
-                    b.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-600');
-                });
-                e.target.classList.add('active-tab', 'bg-sky-900/20', 'text-sky-400');
-                e.target.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-600');
-
-                // Ocultar todos los módulos y mostrar el elegido
-                document.getElementById('mod0').classList.add('hidden');
-                document.getElementById('mod1').classList.add('hidden');
-                
-                const section = document.getElementById(targetMod);
-                section.classList.remove('hidden');
-                section.classList.add('relative');
-
-                // Actualizar misión de la consola
                 currentModule = targetMod;
-                missionText.innerText = moduleMissions[targetMod].mission;
-                hintText.innerText = moduleMissions[targetMod].hint;
+                
+                // Botones Top
+                document.querySelectorAll('.mod-tab-btn').forEach(b => {
+                    b.classList.remove('active-tab', 'bg-sky-900/20', 'text-sky-400', 'bg-rose-900/20', 'text-rose-400');
+                    b.classList.add('bg-slate-800');
+                });
+                if(targetMod === 'mod5') e.target.classList.add('active-tab', 'bg-rose-900/20', 'text-rose-400');
+                else e.target.classList.add('active-tab', 'bg-sky-900/20', 'text-sky-400');
+                e.target.classList.remove('bg-slate-800');
+
+                // Mostrar/Ocultar Módulos (DOM seguro)
+                document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden', 'block'));
+                document.getElementById(targetMod).classList.remove('hidden');
+
+                missionText.innerText = moduleData[targetMod].hint;
+
+                // Layout 3 Paneles para Módulo 5
+                if(targetMod === 'mod5') {
+                    leftPanel.classList.replace('w-[60%]', 'w-[30%]');
+                    centerPanel.classList.remove('hidden');
+                    setTimeout(() => centerPanel.classList.replace('w-0', 'w-[40%]'), 10);
+                    rightPanel.classList.replace('w-[40%]', 'w-[30%]');
+                    // Reiniciar alarma APIPA
+                    document.getElementById('alert-box').className = 'bg-rose-950/40 border-2 border-rose-500 p-8 rounded-xl alert-pulse-rose transition-colors duration-500';
+                    document.getElementById('alert-icon').innerText = '⚠️';
+                    document.getElementById('alert-title').innerText = 'FALLA DHCP: APIPA DETECTADO';
+                    document.getElementById('alert-title').className = 'text-2xl font-bold text-rose-500 font-mono mb-2';
+                    document.getElementById('alert-ip').innerText = 'IP: 169.254.15.22';
+                } else {
+                    leftPanel.classList.replace('w-[30%]', 'w-[60%]');
+                    centerPanel.classList.replace('w-[40%]', 'w-0');
+                    setTimeout(() => centerPanel.classList.add('hidden'), 500);
+                    rightPanel.classList.replace('w-[30%]', 'w-[40%]');
+                }
+
+                if(targetMod === 'mod2') promptText.innerHTML = "<span class='text-rose-400'>Puerto remoto cifrado: </span>";
+                else if(targetMod === 'mod4') document.querySelector('[data-term="bash"]').click();
+                else promptText.innerHTML = consoleConfigs[currentOS].prompt;
             });
         });
 
-        // Cambio de Pestañas de Terminal (Derecha)
+        // Cambiar OS Consola
         document.querySelectorAll('.term-tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const targetOS = e.target.dataset.term;
-                currentOS = targetOS;
-                const config = consoleConfigs[targetOS];
-                
+                currentOS = e.target.dataset.term;
                 document.querySelectorAll('.term-tab-btn').forEach(b => {
                     b.classList.remove('active-tab', 'border-sky-500', 'text-sky-400', 'border-blue-500', 'text-blue-400', 'border-emerald-500', 'text-emerald-400');
-                    b.classList.add('border-transparent', 'text-slate-300');
+                    b.classList.add('border-transparent');
                 });
-                
-                e.target.classList.remove('border-transparent', 'text-slate-300');
-                e.target.classList.add('active-tab');
-                e.target.classList.add(...config.activeClass.split(' '));
+                e.target.classList.remove('border-transparent');
+                e.target.classList.add('active-tab', ...consoleConfigs[currentOS].activeClass.split(' '));
 
-                termContainer.className = `flex-grow p-6 font-mono text-xl overflow-y-auto custom-scroll relative border-2 border-transparent transition-all duration-300 ${config.bgColor}`;
+                inputField.className = `bg-transparent border-none outline-none flex-grow font-mono w-full caret-transparent ${consoleConfigs[currentOS].color}`;
+                if(currentModule !== 'mod2') promptText.innerHTML = consoleConfigs[currentOS].prompt;
                 
-                // Restablecer estado de SSH si cambiamos de consola
-                isAwaitingSSHPassword = false;
-                inputField.type = "text";
-                promptText.innerHTML = config.prompt;
-                inputField.className = `bg-transparent border-none outline-none flex-grow font-mono text-xl w-full caret-transparent ${config.color}`;
-
-                outputDiv.innerHTML += `<div><br><span class="text-slate-500 italic">-- Cambiando entorno a ${targetOS.toUpperCase()} --</span><br></div>`;
-                inputField.value = '';
-                inputField.focus();
-                scrollToBottom();
+                isAwaitingSSH = false; inputField.type = "text";
+                outputDiv.innerHTML += `<div><br><span class="text-slate-500 italic">-- Entorno ${currentOS.toUpperCase()} --</span><br></div>`;
+                inputField.value = ''; inputField.focus(); termContainer.scrollTop = termContainer.scrollHeight;
             });
         });
 
-        // Procesar Comandos
+        // Motor Terminal
         inputField.addEventListener('keydown', function(e) {
             if(e.key === 'Enter') {
-                const cmdLine = this.value.trim();
+                const rawCmd = this.value.trim();
+                const cmd = rawCmd.toLowerCase();
                 this.value = '';
                 
-                // 1. Manejo de estado SSH (Aguardando Contraseña)
-                if (isAwaitingSSHPassword) {
+                if (isAwaitingSSH) {
                     outputDiv.innerHTML += `<div>${promptText.innerHTML} <span class="${consoleConfigs[currentOS].color}">********</span></div>`;
-                    
-                    isAwaitingSSHPassword = false;
-                    inputField.type = "text"; // Restaurar input visual
-                    
-                    // Cambiar el prompt permanentemente a SSH
-                    const sshPrompt = '<span class="text-emerald-400 font-bold">admin42@ubuserver</span><span class="text-white">:</span><span class="text-blue-400">~</span><span class="text-white">$</span>';
-                    promptText.innerHTML = sshPrompt;
-                    consoleConfigs[currentOS].prompt = sshPrompt; // Lo guardamos temporalmente en la config
-                    
-                    triggerSuccess();
-                    outputDiv.innerHTML += `<div class="mt-2 mb-4 text-emerald-300">Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-89-generic x86_64)<br><br> * Documentation:  https://help.ubuntu.com<br> * Management:     https://landscape.canonical.com<br> * Support:        https://ubuntu.com/advantage<br><br><span class="text-emerald-400 font-bold">[OK] Autenticación RSA completada. Conexión establecida.</span> <button data-cite="cite_m1_20" class="cite-btn text-xs px-2 py-1 ml-2">📖 Ver cita</button></div>`;
-                    
-                    // Reasignar eventos de cita para los botones generados dinámicamente
-                    bindDynamicCitations();
-                    scrollToBottom();
-                    return;
+                    isAwaitingSSH = false; inputField.type = "text";
+                    promptText.innerHTML = '<span class="text-emerald-400 font-bold">admin42@ubuserver</span><span class="text-white">:~$</span>';
+                    AudioEngine.play('success'); termContainer.classList.add('terminal-success'); setTimeout(() => termContainer.classList.remove('terminal-success'), 400);
+                    outputDiv.innerHTML += `<div class="mt-2 mb-4 text-emerald-300">Welcome to Ubuntu 22.04 LTS.<br>[OK] RSA Auth success.</div>`;
+                    scrollToBottom(); return;
                 }
 
-                if(!cmdLine) return;
-
-                // 2. Ejecución normal
-                const config = consoleConfigs[currentOS];
-                outputDiv.innerHTML += `<div>${config.prompt} <span class="${config.color}">${cmdLine}</span></div>`;
+                if(!cmd) return;
                 
-                processCommand(cmdLine, currentOS);
+                // Renderizado con resaltado dinámico (Mod 4)
+                let renderCmd = rawCmd;
+                if(currentModule === 'mod4') {
+                    renderCmd = rawCmd.replace(/\b\d{1,3}(\.\d{1,3}){3}\b/g, '<span class="text-cyan-400">$&</span>')
+                                      .replace(/\b(wlan0|eth0)\b/g, '<span class="text-emerald-400">$&</span>')
+                                      .replace(/\b(netmask|broadcast)\b/g, '<span class="text-yellow-400">$&</span>');
+                }
+                outputDiv.innerHTML += `<div>${promptText.innerHTML} <span class="${consoleConfigs[currentOS].color}">${renderCmd}</span></div>`;
+
+                let error = false, output = '';
+
+                // Lógicas por Módulo
+                if(cmd === 'cls' || cmd === 'clear') { outputDiv.innerHTML = ''; return; }
+
+                if (currentModule === 'mod1' && cmd === 'ssh admin42@192.168.1.30') {
+                    isAwaitingSSH = true; promptText.innerHTML = "admin42@192.168.1.30's password: "; inputField.type = "password";
+                    outputDiv.innerHTML += `<div class="mt-1 mb-2 text-slate-400">Warning: Permanently added '192.168.1.30' to known hosts.</div>`;
+                } 
+                else if (currentModule === 'mod2') {
+                    if (cmd === '22') { output = `<span class="text-emerald-400">[ACCESO CONCEDIDO] Puerto SSH Validado.</span>`; AudioEngine.play('success'); }
+                    else { error = true; output = `El puerto ${cmd} es incorrecto.`; }
+                }
+                else if (currentModule === 'mod3') {
+                    if (mod3_state === 0 && cmd === 'ipconfig /release') {
+                        mod3_state = 1; output = `Adaptador Ethernet: Medios desconectados.`; AudioEngine.play('type_tick');
+                    } else if (mod3_state === 1 && cmd === 'ipconfig /renew') {
+                        mod3_state = 2; output = `<span class="text-emerald-300">IPv4 . . : 192.168.13.220<br>Misión Cumplida.</span>`; AudioEngine.play('success');
+                    } else { error = true; output = `Comando no esperado. Usa /release luego /renew`; }
+                }
+                else if (currentModule === 'mod4') {
+                    if(rawCmd === 'ifconfig wlan0 192.168.1.45 netmask 255.255.255.0') {
+                        output = `<span class="text-emerald-400">[OK] Interfaz wlan0 configurada correctamente.</span>`; AudioEngine.play('success');
+                    } else { error = true; output = `Sintaxis incorrecta. Revisa espacios e IPs.`; }
+                }
+                else if (currentModule === 'mod5') {
+                    if ((currentOS === 'cmd' && cmd === 'ipconfig /renew') || (currentOS === 'bash' && cmd === 'dhclient eth0')) {
+                        output = `<span class="text-emerald-400">Solicitud DHCP Procesada.</span>`; AudioEngine.play('success');
+                        document.getElementById('alert-box').className = 'bg-emerald-950/40 border-2 border-emerald-500 p-8 rounded-xl alert-pulse-emerald transition-colors duration-500';
+                        document.getElementById('alert-icon').innerText = '✅';
+                        document.getElementById('alert-title').innerText = 'RED OPERATIVA: IP RECUPERADA';
+                        document.getElementById('alert-title').className = 'text-2xl font-bold text-emerald-500 font-mono mb-2';
+                        document.getElementById('alert-ip').innerText = 'IP: 192.168.1.105 (DHCP)';
+                    } else { error = true; output = `Comando de recuperación incorrecto.`; }
+                }
+                else {
+                    // Comandos Genéricos
+                    if(cmd.startsWith('echo')) { output = `<span class='text-emerald-400'>[OK] Echo completado.</span>`; AudioEngine.play('success'); }
+                    else { error = true; output = `'${cmd}' no reconocido.`; }
+                }
+
+                if (error) {
+                    AudioEngine.play('error_buzz'); termContainer.classList.add('terminal-error'); setTimeout(() => termContainer.classList.remove('terminal-error'), 400);
+                    outputDiv.innerHTML += `<div class="text-rose-500 mt-1 mb-3">${output}</div>`;
+                } else if (output) {
+                    termContainer.classList.add('terminal-success'); setTimeout(() => termContainer.classList.remove('terminal-success'), 400);
+                    outputDiv.innerHTML += `<div class="mt-1 mb-3 text-slate-300">${output}</div>`;
+                }
                 scrollToBottom();
             }
         });
-
-        function triggerError() {
-            AudioEngine.play('error_buzz');
-            termContainer.classList.add('terminal-error');
-            setTimeout(() => termContainer.classList.remove('terminal-error'), 400);
-        }
-
-        function triggerSuccess() {
-            AudioEngine.play('success');
-            termContainer.classList.add('terminal-success');
-            setTimeout(() => termContainer.classList.remove('terminal-success'), 400);
-        }
-
-        function processCommand(cmd, env) {
-            const args = cmd.split(' ');
-            const baseCmd = args[0].toLowerCase();
-            let output = '';
-            let isError = false;
-
-            // Universal: Limpieza de pantalla
-            if (baseCmd === 'clear' || baseCmd === 'cls') {
-                outputDiv.innerHTML = '';
-                return;
-            }
-
-            // Universal: Reto Módulo 1 -> Conexión SSH
-            if (currentModule === 'mod1' && baseCmd === 'ssh' && args[1] === 'admin42@192.168.1.30') {
-                isAwaitingSSHPassword = true;
-                promptText.innerHTML = "admin42@192.168.1.30's password: ";
-                inputField.type = "password"; // Ocultar lo que teclea
-                outputDiv.innerHTML += `<div class="mt-1 mb-2 text-slate-300">The authenticity of host '192.168.1.30 (192.168.1.30)' can't be established.<br>ECDSA key fingerprint is SHA256:ROQkF+W2RXY3jY...<br>Warning: Permanently added '192.168.1.30' (ECDSA) to the list of known hosts.</div>`;
-                return;
-            }
-
-            // Lógica CMD
-            if (env === 'cmd') {
-                if (baseCmd === 'echo' && args[1] === '%PATH%') {
-                    output = `${simulatedFileSystem.pathCmd}<br><span class='text-emerald-400'>[OK] Comando CMD ejecutado.</span>`;
-                    triggerSuccess();
-                } else if (baseCmd === 'dir') {
-                    output = ` Directorio de C:\\Users\\Estudiante<br><br>21/08/2026  20:31    &lt;DIR&gt;          .<br>21/08/2026  20:31    &lt;DIR&gt;          ..<br>21/08/2026  15:42    &lt;DIR&gt;          Documents<br>               0 archivos              0 bytes`;
-                    triggerSuccess();
-                } else {
-                    output = `'${baseCmd}' no se reconoce como un comando interno o externo.`;
-                    isError = true;
-                }
-            } 
-            // Lógica PowerShell
-            else if (env === 'ps') {
-                if (baseCmd === 'echo' && args[1] === '$env:PATH') {
-                    output = `${simulatedFileSystem.pathCmd}<br><span class='text-emerald-400'>[OK] Comando PS ejecutado.</span>`;
-                    triggerSuccess();
-                } else if (baseCmd === 'get-netipaddress') {
-                    output = `<span class='text-yellow-300'>IPAddress : 192.168.1.50</span><br>InterfaceAlias : Wi-Fi<br><span class='text-emerald-400'>[OK] Objeto .NET recuperado.</span>`;
-                    triggerSuccess();
-                } else {
-                    output = `Get-Command : El término '${baseCmd}' no se reconoce como cmdlet.`;
-                    isError = true;
-                }
-            } 
-            // Lógica Bash
-            else if (env === 'bash') {
-                if (baseCmd === 'echo' && args[1] === '$PATH') {
-                    output = `${simulatedFileSystem.pathBash}<br><span class='text-emerald-400'>[OK] Comando Bash ejecutado.</span>`;
-                    triggerSuccess();
-                } else if (baseCmd === 'ls') {
-                    output = `<span class="text-blue-400 font-bold">Documentos</span>  <span class="text-blue-400 font-bold">Descargas</span>  archivo.txt`;
-                    triggerSuccess();
-                } else {
-                    output = `bash: ${baseCmd}: command not found`;
-                    isError = true;
-                }
-            }
-
-            if (isError) {
-                triggerError();
-                outputDiv.innerHTML += `<div class="text-rose-500 mt-1 mb-3">${output}</div>`;
-            } else if (output) {
-                outputDiv.innerHTML += `<div class="mt-1 mb-3 text-slate-300">${output}</div>`;
-            }
-        }
 
         function scrollToBottom() { termContainer.scrollTop = termContainer.scrollHeight; }
         termContainer.addEventListener('click', () => inputField.focus());
-
-        // Para enlazar el botón de cita que se genera dentro de la respuesta SSH
-        function bindDynamicCitations() {
-            document.querySelectorAll('.cite-btn:not([data-bound])').forEach(btn => {
-                btn.setAttribute('data-bound', 'true');
-                btn.addEventListener('click', (e) => {
-                    const data = citationsDB[e.target.dataset.cite];
-                    if(data) {
-                        document.getElementById('cite-book').innerText = data.book;
-                        document.getElementById('cite-author').innerText = data.author;
-                        document.getElementById('cite-year').innerText = data.year;
-                        document.getElementById('cite-page').innerText = data.page;
-                        document.getElementById('cite-text').innerText = data.extract;
-                        
-                        modal.classList.remove('hidden');
-                        void modal.offsetWidth;
-                        modal.classList.remove('opacity-0');
-                        modalContent.classList.remove('scale-95');
-                        modalContent.classList.add('scale-100');
-                    }
-                });
-            });
-        }
     </script>
+</body>
+</html>
