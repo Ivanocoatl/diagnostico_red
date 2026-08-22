@@ -550,18 +550,40 @@ drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
         });
 
 
-        // ----------------------------------------------------
-        // 3. SISTEMA DE CITAS INTERACTIVAS
+         // ----------------------------------------------------
+        // 3. SISTEMA DE CITAS INTERACTIVAS Y BASE DE DATOS
         // ----------------------------------------------------
         const citationsDB = {
-            cite_1: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. xvi", extract: "La CLI se fundamenta en la transmisión de flujos de texto que se comunican directamente con el shell del sistema operativo. Esto permite la composición de comandos complejos mediante tuberías (pipelines) y el control absoluto del entorno." },
-            cite_2: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 135", extract: "Un intérprete de comandos lee directamente de la entrada estándar, busca el binario, genera un proceso hijo y devuelve resultados a la salida estándar." },
-            cite_3: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 57", extract: "Paradigma orientado a procesamiento de texto plano y ejecución secuencial de archivos por lotes (batch files)." },
+            // Módulo 0
+            cite_1: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. xvi", extract: "La CLI se fundamenta en la transmisión de flujos de texto que se comunican directamente con el shell del sistema operativo..." },
+            cite_2: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 135", extract: "Un intérprete de comandos lee directamente de la entrada estándar, busca el binario, genera un proceso hijo y devuelve resultados..." },
+            cite_3: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 57", extract: "Paradigma orientado a procesamiento de texto plano y ejecución secuencial de archivos por lotes." },
             cite_4: { book: "Windows PowerShell Networking Guide", author: "Ed Wilson", year: "2018", page: "p. 10", extract: "Orientado a objetos basados en .NET. No canaliza cadenas de texto simple, sino instancias completas de objetos." },
-            cite_5: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 304", extract: "Filosofía Unix de hacer una sola cosa bien y utilizar texto plano como la interfaz universal de comunicación." },
+            cite_5: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 304", extract: "Filosofía Unix de hacer una sola cosa bien y utilizar texto plano como la interfaz universal." },
             cite_6: { book: "Linux Basics for Hackers", author: "OccupyTheWeb", year: "2019", page: "p. 74", extract: "Verificar el entorno de variables globales con echo $PATH para identificar binarios faltantes." },
             cite_7: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 37", extract: "Añadir de forma temporal o permanente la ruta al ejecutable usando set PATH=..." },
-            cite_8: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 131", extract: "Modificar el entorno exportando la variable PATH para incluir nuevas rutas a binarios." }
+            cite_8: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 131", extract: "Modificar el entorno exportando la variable PATH para incluir nuevas rutas a binarios." },
+            // Módulo 1
+            cite_m1_1: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 271", extract: "clear consulta la base de datos terminfo para obtener las secuencias de escape ANSI correctas para el tipo de terminal activa (por ejemplo, \\033[2J y \\033[H)." },
+            cite_m1_2: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 90", extract: "/A: Muestra archivos con atributos específicos (ocultos, de sistema)." },
+            cite_m1_3: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 73", extract: "/S: Muestra los archivos en el directorio especificado y en todos los subdirectorios de manera recursiva." },
+            cite_m1_4: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 83", extract: "/B: Usa formato básico sin encabezados ni resúmenes de almacenamiento." },
+            cite_m1_5: { book: "Linux Basics for Hackers", author: "OccupyTheWeb", year: "2019", page: "p. 230", extract: "-l: Formato de listado largo, que expone los permisos, enlaces, dueño, grupo, tamaño y marca de tiempo." },
+            cite_m1_6: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 13", extract: "-a: Lista todos los elementos, incluidos los ocultos que inician con un punto (.)." },
+            cite_m1_7: { book: "Linux Basics for Hackers", author: "OccupyTheWeb", year: "2019", page: "p. 230", extract: "-h: Traduce tamaños de archivo a formato legible por humanos (ej. 4K, 12M)." },
+            cite_m1_8: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 57", extract: "Sintaxis: type [ruta_archivo] para visualizar contenido en CMD." },
+            cite_m1_9: { book: "Windows PowerShell Networking Guide", author: "Ed Wilson", year: "2018", page: "p. 156", extract: "Sintaxis: Get-Content [ruta_archivo] para procesar objetos de texto en PS." },
+            cite_m1_10: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 53", extract: "cat vuelca el contenido completo, less permite navegación interactiva paginada." },
+            cite_m1_11: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 25-36", extract: "Uso de copy y move para gestión de archivos en Windows CMD." },
+            cite_m1_12: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 28-30", extract: "Uso de cp y mv para copiado y movimiento en sistemas Unix." },
+            cite_m1_13: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 73", extract: "/V: Verifica si los nuevos archivos se escriben correctamente en el disco." },
+            cite_m1_14: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 275", extract: "-r: Copia directorios completos de manera recursiva." },
+            cite_m1_15: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 274", extract: "-i: Modo interactivo; solicita confirmación antes de sobrescribir archivos existentes." },
+            cite_m1_16: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 275", extract: "-u: Actualización; copia únicamente si el archivo origen es más nuevo que el destino." },
+            cite_m1_17: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 118", extract: "runas: Ejecuta herramientas con permisos de otro usuario (grupo administradores)." },
+            cite_m1_18: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. 101", extract: "su: Substitute user, cambia a superusuario. sudo: Ejecuta comandos bajo políticas de /etc/sudoers." },
+            cite_m1_19: { book: "Computer Networks", author: "Tanenbaum et al.", year: "2021", page: "p. 23", extract: "Telnet es vulnerable a packet sniffing. SSH provee un canal cifrado TCP 22 con criptografía." },
+            cite_m1_20: { book: "Linux System Administration", author: "Paul Cobbaut", year: "2015", page: "p. 257", extract: "Tras la autenticación SSH, el shell remoto inicia y presenta el prompt configurado por el host destino." }
         };
 
         const modal = document.getElementById('citation-modal');
@@ -600,9 +622,12 @@ drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
 
 
         // ----------------------------------------------------
-        // 4. MOTOR DE CONSOLA INTERACTIVA (Escritura Libre)
+        // 4. LÓGICA DE NAVEGACIÓN Y MOTOR DE CONSOLA
         // ----------------------------------------------------
+        let currentModule = 'mod0';
         let currentOS = 'cmd';
+        let isAwaitingSSHPassword = false;
+
         const inputField = document.getElementById('cmd-input');
         const outputDiv = document.getElementById('terminal-output');
         const promptText = document.getElementById('prompt-text');
@@ -610,66 +635,81 @@ drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
         const missionText = document.getElementById('mission-text');
         const hintText = document.getElementById('hint-text');
 
-        // Memoria del sistema
+        // Configuración de Misiones y Terminales
         const simulatedFileSystem = {
             pathCmd: "C:\\Windows\\system32;C:\\Windows",
             pathBash: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
         };
 
-        const consoleConfigs = {
-            'cmd': {
-                prompt: 'C:\\Users\\Estudiante&gt;',
-                color: 'text-slate-300',
-                bgColor: 'bg-black',
-                mission: "Consulta la variable de entorno PATH en el sistema local.",
-                hint: "Hint: Usa 'echo %PATH%'",
-                activeClass: 'border-sky-500 text-sky-400'
+        const moduleMissions = {
+            'mod0': {
+                mission: "Consulta la variable de entorno PATH en el sistema actual.",
+                hint: "Hint: Usa 'echo %PATH%' o 'echo $PATH'"
             },
-            'ps': {
-                prompt: 'PS C:\\&gt;',
-                color: 'text-white',
-                bgColor: 'bg-blue-950/20',
-                mission: "Consulta la variable PATH utilizando PowerShell.",
-                hint: "Hint: Usa 'echo $env:PATH' o intenta 'Get-NetIPAddress'",
-                activeClass: 'border-blue-500 text-blue-400'
-            },
-            'bash': {
-                prompt: '<span class="text-emerald-400 font-bold">kali@admin</span><span class="text-white">:</span><span class="text-blue-400">~</span><span class="text-white">$</span>',
-                color: 'text-emerald-100',
-                bgColor: 'bg-emerald-950/10',
-                mission: "Consulta las rutas de binarios en Bash usando la variable global PATH.",
-                hint: "Hint: Recuerda que es case-sensitive. Usa 'echo $PATH'",
-                activeClass: 'border-emerald-500 text-emerald-400'
+            'mod1': {
+                mission: "Simula una conexión remota segura mediante SSH al servidor de prácticas.",
+                hint: "Hint: Usa 'ssh admin42@192.168.1.30'"
             }
         };
 
-        // Cambiar pestañas
+        const consoleConfigs = {
+            'cmd': { prompt: 'C:\\Users\\Estudiante&gt;', color: 'text-slate-300', bgColor: 'bg-black', activeClass: 'border-sky-500 text-sky-400' },
+            'ps': { prompt: 'PS C:\\&gt;', color: 'text-white', bgColor: 'bg-blue-950/20', activeClass: 'border-blue-500 text-blue-400' },
+            'bash': { prompt: '<span class="text-emerald-400 font-bold">kali@admin</span><span class="text-white">:</span><span class="text-blue-400">~</span><span class="text-white">$</span>', color: 'text-emerald-100', bgColor: 'bg-emerald-950/10', activeClass: 'border-emerald-500 text-emerald-400' }
+        };
+
+        // Cambio de Módulos (Navegación Izquierda)
+        document.querySelectorAll('.mod-tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetMod = e.target.dataset.target;
+                
+                // Actualizar UI del Navbar
+                document.querySelectorAll('.mod-tab-btn').forEach(b => {
+                    b.classList.remove('active-tab', 'bg-sky-900/20', 'text-sky-400');
+                    b.classList.add('bg-slate-800', 'text-slate-300', 'border-slate-600');
+                });
+                e.target.classList.add('active-tab', 'bg-sky-900/20', 'text-sky-400');
+                e.target.classList.remove('bg-slate-800', 'text-slate-300', 'border-slate-600');
+
+                // Ocultar todos los módulos y mostrar el elegido
+                document.getElementById('mod0').classList.add('hidden');
+                document.getElementById('mod1').classList.add('hidden');
+                
+                const section = document.getElementById(targetMod);
+                section.classList.remove('hidden');
+                section.classList.add('relative');
+
+                // Actualizar misión de la consola
+                currentModule = targetMod;
+                missionText.innerText = moduleMissions[targetMod].mission;
+                hintText.innerText = moduleMissions[targetMod].hint;
+            });
+        });
+
+        // Cambio de Pestañas de Terminal (Derecha)
         document.querySelectorAll('.term-tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const targetOS = e.target.dataset.term;
                 currentOS = targetOS;
                 const config = consoleConfigs[targetOS];
                 
-                // Reset tab styles
                 document.querySelectorAll('.term-tab-btn').forEach(b => {
                     b.classList.remove('active-tab', 'border-sky-500', 'text-sky-400', 'border-blue-500', 'text-blue-400', 'border-emerald-500', 'text-emerald-400');
                     b.classList.add('border-transparent', 'text-slate-300');
                 });
                 
-                // Active tab
                 e.target.classList.remove('border-transparent', 'text-slate-300');
                 e.target.classList.add('active-tab');
-                const classesToAdd = config.activeClass.split(' ');
-                e.target.classList.add(...classesToAdd);
+                e.target.classList.add(...config.activeClass.split(' '));
 
-                // Update UI
                 termContainer.className = `flex-grow p-6 font-mono text-xl overflow-y-auto custom-scroll relative border-2 border-transparent transition-all duration-300 ${config.bgColor}`;
+                
+                // Restablecer estado de SSH si cambiamos de consola
+                isAwaitingSSHPassword = false;
+                inputField.type = "text";
                 promptText.innerHTML = config.prompt;
                 inputField.className = `bg-transparent border-none outline-none flex-grow font-mono text-xl w-full caret-transparent ${config.color}`;
-                missionText.innerText = config.mission;
-                hintText.innerText = config.hint;
 
-                // Log change in terminal
                 outputDiv.innerHTML += `<div><br><span class="text-slate-500 italic">-- Cambiando entorno a ${targetOS.toUpperCase()} --</span><br></div>`;
                 inputField.value = '';
                 inputField.focus();
@@ -682,8 +722,31 @@ drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
             if(e.key === 'Enter') {
                 const cmdLine = this.value.trim();
                 this.value = '';
+                
+                // 1. Manejo de estado SSH (Aguardando Contraseña)
+                if (isAwaitingSSHPassword) {
+                    outputDiv.innerHTML += `<div>${promptText.innerHTML} <span class="${consoleConfigs[currentOS].color}">********</span></div>`;
+                    
+                    isAwaitingSSHPassword = false;
+                    inputField.type = "text"; // Restaurar input visual
+                    
+                    // Cambiar el prompt permanentemente a SSH
+                    const sshPrompt = '<span class="text-emerald-400 font-bold">admin42@ubuserver</span><span class="text-white">:</span><span class="text-blue-400">~</span><span class="text-white">$</span>';
+                    promptText.innerHTML = sshPrompt;
+                    consoleConfigs[currentOS].prompt = sshPrompt; // Lo guardamos temporalmente en la config
+                    
+                    triggerSuccess();
+                    outputDiv.innerHTML += `<div class="mt-2 mb-4 text-emerald-300">Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-89-generic x86_64)<br><br> * Documentation:  https://help.ubuntu.com<br> * Management:     https://landscape.canonical.com<br> * Support:        https://ubuntu.com/advantage<br><br><span class="text-emerald-400 font-bold">[OK] Autenticación RSA completada. Conexión establecida.</span> <button data-cite="cite_m1_20" class="cite-btn text-xs px-2 py-1 ml-2">📖 Ver cita</button></div>`;
+                    
+                    // Reasignar eventos de cita para los botones generados dinámicamente
+                    bindDynamicCitations();
+                    scrollToBottom();
+                    return;
+                }
+
                 if(!cmdLine) return;
 
+                // 2. Ejecución normal
                 const config = consoleConfigs[currentOS];
                 outputDiv.innerHTML += `<div>${config.prompt} <span class="${config.color}">${cmdLine}</span></div>`;
                 
@@ -710,20 +773,28 @@ drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
             let output = '';
             let isError = false;
 
-            // Comandos universales de limpieza
+            // Universal: Limpieza de pantalla
             if (baseCmd === 'clear' || baseCmd === 'cls') {
                 outputDiv.innerHTML = '';
+                return;
+            }
+
+            // Universal: Reto Módulo 1 -> Conexión SSH
+            if (currentModule === 'mod1' && baseCmd === 'ssh' && args[1] === 'admin42@192.168.1.30') {
+                isAwaitingSSHPassword = true;
+                promptText.innerHTML = "admin42@192.168.1.30's password: ";
+                inputField.type = "password"; // Ocultar lo que teclea
+                outputDiv.innerHTML += `<div class="mt-1 mb-2 text-slate-300">The authenticity of host '192.168.1.30 (192.168.1.30)' can't be established.<br>ECDSA key fingerprint is SHA256:ROQkF+W2RXY3jY...<br>Warning: Permanently added '192.168.1.30' (ECDSA) to the list of known hosts.</div>`;
                 return;
             }
 
             // Lógica CMD
             if (env === 'cmd') {
                 if (baseCmd === 'echo' && args[1] === '%PATH%') {
-                    output = `${simulatedFileSystem.pathCmd}<br><br><span class='text-emerald-400'>[OK] Comando ejecutado correctamente en CMD.</span>`;
+                    output = `${simulatedFileSystem.pathCmd}<br><span class='text-emerald-400'>[OK] Comando CMD ejecutado.</span>`;
                     triggerSuccess();
-                } else if (baseCmd === 'set' && args[1]?.startsWith('PATH=')) {
-                    simulatedFileSystem.pathCmd = args[1].replace('PATH=', '');
-                    output = `PATH actualizado.`;
+                } else if (baseCmd === 'dir') {
+                    output = ` Directorio de C:\\Users\\Estudiante<br><br>21/08/2026  20:31    &lt;DIR&gt;          .<br>21/08/2026  20:31    &lt;DIR&gt;          ..<br>21/08/2026  15:42    &lt;DIR&gt;          Documents<br>               0 archivos              0 bytes`;
                     triggerSuccess();
                 } else {
                     output = `'${baseCmd}' no se reconoce como un comando interno o externo.`;
@@ -733,24 +804,20 @@ drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
             // Lógica PowerShell
             else if (env === 'ps') {
                 if (baseCmd === 'echo' && args[1] === '$env:PATH') {
-                    output = `${simulatedFileSystem.pathCmd}<br><br><span class='text-emerald-400'>[OK] Comando ejecutado en PS.</span>`;
+                    output = `${simulatedFileSystem.pathCmd}<br><span class='text-emerald-400'>[OK] Comando PS ejecutado.</span>`;
                     triggerSuccess();
                 } else if (baseCmd === 'get-netipaddress') {
-                    output = `<span class='text-yellow-300'>IPAddress         : 192.168.1.50</span><br>InterfaceAlias    : Wi-Fi<br>AddressFamily     : IPv4<br><br><span class='text-emerald-400'>[OK] Objeto .NET recuperado correctamente.</span>`;
+                    output = `<span class='text-yellow-300'>IPAddress : 192.168.1.50</span><br>InterfaceAlias : Wi-Fi<br><span class='text-emerald-400'>[OK] Objeto .NET recuperado.</span>`;
                     triggerSuccess();
                 } else {
-                    output = `Get-Command : El término '${baseCmd}' no se reconoce como nombre de un cmdlet, función, archivo de script o programa ejecutable.`;
+                    output = `Get-Command : El término '${baseCmd}' no se reconoce como cmdlet.`;
                     isError = true;
                 }
             } 
             // Lógica Bash
             else if (env === 'bash') {
                 if (baseCmd === 'echo' && args[1] === '$PATH') {
-                    output = `${simulatedFileSystem.pathBash}<br><br><span class='text-emerald-400'>[OK] Variable global consultada con éxito.</span>`;
-                    triggerSuccess();
-                } else if (baseCmd === 'export' && args[1]?.startsWith('PATH=')) {
-                    simulatedFileSystem.pathBash = args[1].replace('PATH=', '');
-                    output = ''; 
+                    output = `${simulatedFileSystem.pathBash}<br><span class='text-emerald-400'>[OK] Comando Bash ejecutado.</span>`;
                     triggerSuccess();
                 } else if (baseCmd === 'ls') {
                     output = `<span class="text-blue-400 font-bold">Documentos</span>  <span class="text-blue-400 font-bold">Descargas</span>  archivo.txt`;
@@ -761,7 +828,6 @@ drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
                 }
             }
 
-            // Renderizar salida
             if (isError) {
                 triggerError();
                 outputDiv.innerHTML += `<div class="text-rose-500 mt-1 mb-3">${output}</div>`;
@@ -770,13 +836,29 @@ drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
             }
         }
 
-        function scrollToBottom() {
-            termContainer.scrollTop = termContainer.scrollHeight;
-        }
-
-        // Mantener foco
+        function scrollToBottom() { termContainer.scrollTop = termContainer.scrollHeight; }
         termContainer.addEventListener('click', () => inputField.focus());
 
+        // Para enlazar el botón de cita que se genera dentro de la respuesta SSH
+        function bindDynamicCitations() {
+            document.querySelectorAll('.cite-btn:not([data-bound])').forEach(btn => {
+                btn.setAttribute('data-bound', 'true');
+                btn.addEventListener('click', (e) => {
+                    const data = citationsDB[e.target.dataset.cite];
+                    if(data) {
+                        document.getElementById('cite-book').innerText = data.book;
+                        document.getElementById('cite-author').innerText = data.author;
+                        document.getElementById('cite-year').innerText = data.year;
+                        document.getElementById('cite-page').innerText = data.page;
+                        document.getElementById('cite-text').innerText = data.extract;
+                        
+                        modal.classList.remove('hidden');
+                        void modal.offsetWidth;
+                        modal.classList.remove('opacity-0');
+                        modalContent.classList.remove('scale-95');
+                        modalContent.classList.add('scale-100');
+                    }
+                });
+            });
+        }
     </script>
-</body>
-</html>
