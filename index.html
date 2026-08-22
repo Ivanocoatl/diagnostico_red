@@ -3,471 +3,573 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LabNet CLI - Módulo 0</title>
+    <title>LabNet CLI - Curso Completo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Tipografía base solicitada: 24pts (~32px) para máxima legibilidad en lectura */
-        .texto-lectura {
+        /* Tipografía Base de 24pts (aprox 32px) para todo el contenido principal */
+        body {
             font-size: 24px;
             line-height: 1.6;
         }
 
+        /* Utilidades para tamaños relativos proporcionales a 24px */
+        .text-h1 { font-size: 42px; line-height: 1.2; font-weight: 700; }
+        .text-h2 { font-size: 36px; line-height: 1.3; font-weight: 700; }
+        .text-h3 { font-size: 28px; line-height: 1.4; font-weight: 700; }
+        .text-small { font-size: 20px; line-height: 1.5; }
+        .text-tiny { font-size: 16px; line-height: 1.5; }
+
         /* Efectos Glow Customizados */
-        .btn-glow-sky { transition: all 0.2s ease; box-shadow: 0 0 0px transparent; border: 1px solid #0ea5e9; }
-        .btn-glow-sky:hover { box-shadow: 0 0 15px #0ea5e9, inset 0 0 10px #0ea5e9; border-color: #7dd3fc; }
-        .btn-glow-sky:active { transform: scale(0.95); }
+        .btn-glow-sky { transition: all 0.2s ease; box-shadow: 0 0 0px transparent; border: 2px solid #0ea5e9; }
+        .btn-glow-sky:hover { box-shadow: 0 0 20px #0ea5e9, inset 0 0 10px #0ea5e9; border-color: #7dd3fc; cursor: pointer; }
+        .btn-glow-sky:active { transform: scale(0.98); }
 
-        .btn-glow-emerald { transition: all 0.2s ease; box-shadow: 0 0 0px transparent; border: 1px solid #10b981; }
-        .btn-glow-emerald:hover { box-shadow: 0 0 15px #10b981, inset 0 0 10px #10b981; border-color: #6ee7b7; }
-        .btn-glow-emerald:active { transform: scale(0.95); }
+        .btn-glow-emerald { transition: all 0.2s ease; box-shadow: 0 0 0px transparent; border: 2px solid #10b981; }
+        .btn-glow-emerald:hover { box-shadow: 0 0 20px #10b981, inset 0 0 10px #10b981; border-color: #6ee7b7; cursor: pointer; }
+        .btn-glow-emerald:active { transform: scale(0.98); }
 
-        .btn-glow-rose { transition: all 0.2s ease; box-shadow: 0 0 0px transparent; border: 1px solid #e11d48; }
-        .btn-glow-rose:hover { box-shadow: 0 0 15px #e11d48, inset 0 0 10px #e11d48; border-color: #fda4af; }
-        .btn-glow-rose:active { transform: scale(0.95); }
+        .btn-glow-rose { transition: all 0.2s ease; box-shadow: 0 0 0px transparent; border: 2px solid #e11d48; }
+        .btn-glow-rose:hover { box-shadow: 0 0 20px #e11d48, inset 0 0 10px #e11d48; border-color: #fda4af; cursor: pointer; }
+        .btn-glow-rose:active { transform: scale(0.98); }
 
         /* Animaciones para la terminal */
         @keyframes errorShake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); border-color: #e11d48; box-shadow: 0 0 15px #e11d48; }
-            75% { transform: translateX(5px); border-color: #e11d48; box-shadow: 0 0 15px #e11d48; }
+            25% { transform: translateX(-10px); box-shadow: 0 0 25px #e11d48, inset 0 0 15px #e11d48; border-color:#e11d48; }
+            75% { transform: translateX(10px); box-shadow: 0 0 25px #e11d48, inset 0 0 15px #e11d48; border-color:#e11d48; }
         }
-        .terminal-error { animation: errorShake 0.4s ease-in-out; }
+        .terminal-error { animation: errorShake 0.4s ease-in-out; border: 2px solid #e11d48 !important; }
         
+        .terminal-success { transition: all 0.3s; box-shadow: 0 0 25px #10b981, inset 0 0 15px #10b981; border-color:#10b981 !important; }
+
         .cursor-blink { animation: blink 1s step-end infinite; }
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* Estilo para el Scrollbar oculto pero funcional */
-        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 10px; }
         .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 5px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
 
         /* Efecto vidrio esmerilado para modal */
         .glass-panel {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(14, 165, 233, 0.3);
+            background: rgba(15, 23, 42, 0.90);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 2px solid rgba(14, 165, 233, 0.4);
         }
+
+        /* Botón de Cita Inline */
+        .cite-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(14, 165, 233, 0.15);
+            color: #38bdf8;
+            border: 1px solid #0ea5e9;
+            padding: 2px 10px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 6px;
+            vertical-align: middle;
+            transition: all 0.2s;
+        }
+        .cite-btn:hover { background: rgba(14, 165, 233, 0.3); box-shadow: 0 0 10px #0ea5e9; cursor: pointer; }
     </style>
 </head>
-<body class="font-sans antialiased h-screen flex flex-col overflow-hidden selection:bg-sky-500 selection:text-white">
+<body class="font-sans antialiased h-screen flex flex-col overflow-hidden">
 
     <!-- HEADER GLOBAL -->
-    <header class="bg-slate-900 border-b border-sky-900/50 p-4 shrink-0 flex justify-between items-center z-20 shadow-[0_0_15px_rgba(14,165,233,0.1)]">
-        <h1 class="text-2xl font-bold text-sky-400 font-mono flex items-center gap-3">
-            <span class="w-4 h-4 rounded-full bg-sky-500 animate-pulse"></span>
-            NET_ADMIN_CLI :: MÓDULO 0
+    <header class="bg-slate-900 border-b-2 border-sky-900 p-5 shrink-0 flex justify-between items-center z-20 shadow-[0_0_20px_rgba(14,165,233,0.15)]">
+        <h1 class="text-h2 font-bold text-sky-400 font-mono flex items-center gap-4">
+            <span class="w-5 h-5 rounded-full bg-sky-500 animate-pulse"></span>
+            NET_ADMIN_CLI
         </h1>
-        <div class="text-sm font-mono text-slate-400">STATUS: ONLINE | AUDIO: ENABLED</div>
+        <nav class="flex gap-4">
+            <button onclick="switchTab('mod0')" id="nav-mod0" class="btn-glow-sky bg-sky-900/40 text-sky-300 px-6 py-2 rounded-xl font-bold font-mono">00_INTRO</button>
+            <button onclick="switchTab('mod1')" id="nav-mod1" class="btn-glow-sky bg-slate-800 text-slate-400 px-6 py-2 rounded-xl font-bold font-mono">01_CONTACTO</button>
+            <button onclick="switchTab('mod2')" id="nav-mod2" class="btn-glow-sky bg-slate-800 text-slate-400 px-6 py-2 rounded-xl font-bold font-mono">02_REDES</button>
+        </nav>
     </header>
 
-    <!-- CONTENEDOR PRINCIPAL (SPLIT SCREEN 60/40) -->
-    <main class="flex-grow flex w-full h-[calc(100vh-73px)] relative">
+    <main class="flex-grow w-full h-[calc(100vh-95px)] relative bg-slate-950">
         
         <!-- =========================================================
-             PANEL IZQUIERDO: LECTURA TEÓRICA (60%)
+             MÓDULO 0: INTRODUCCIÓN (SPLIT 60/40)
              ========================================================= -->
-        <section class="w-[60%] h-full overflow-y-auto custom-scroll p-10 bg-slate-950">
+        <section id="mod0" class="tab-content flex w-full h-full">
+            <div class="w-[60%] h-full overflow-y-auto custom-scroll p-10">
+                <div class="max-w-5xl mx-auto space-y-12">
+                    <h2 class="text-h1 text-white border-b-4 border-slate-800 pb-4">Módulo 0: Bienvenida e Introducción a la CLI</h2>
+                    
+                    <div class="space-y-6">
+                        <h3 class="text-h2 text-sky-400">1. Filosofía de Consola (CLI) vs. GUI</h3>
+                        <div class="bg-slate-900 p-6 rounded-2xl border-2 border-slate-700">
+                            <strong class="text-sky-300 font-mono text-h3 block mb-4">ACRÓNIMOS:</strong>
+                            <ul class="list-disc pl-8 space-y-2 text-slate-300">
+                                <li><strong class="text-white">CLI:</strong> Command Line Interface (Interfaz de Línea de Comandos).</li>
+                                <li><strong class="text-white">GUI:</strong> Graphical User Interface (Interfaz Gráfica de Usuario).</li>
+                            </ul>
+                        </div>
+                        <p class="text-slate-300">
+                            <strong class="text-white">Explicación Teórica Profunda:</strong> La transición histórica supuso el paso de entornos textuales a sistemas gráficos. Mientras que la GUI oculta la complejidad mediante abstracciones visuales, limita la velocidad y automatización. La CLI transmite flujos de texto directos al shell, permitiendo tuberías (pipelines) y control absoluto 
+                            <button class="cite-btn" onclick="showCitation('The Linux Command Line', 'William Shotts', '2019', 'p. xvi', 'La CLI se fundamenta en la transmisión de flujos de texto que se comunican directamente con el shell del sistema operativo. Esto permite la composición de comandos complejos mediante tuberías (pipelines) y el control absoluto del entorno.')">📖 Ver Cita</button>.
+                        </p>
+                        <p class="text-slate-300">
+                            <strong class="text-white">Funcionamiento Interno:</strong> El shell lee directamente de la entrada estándar (stdin), interpreta la cadena, busca el binario en las rutas del sistema (PATH), genera un proceso hijo y devuelve resultados a la salida estándar (stdout)
+                            <button class="cite-btn" onclick="showCitation('Windows Administration at the Command Line', 'John Paul Mueller', '2007', 'p. 135', 'En contraste, un intérprete de comandos o shell lee directamente de la entrada estándar (stdin), interpreta sintácticamente la cadena, busca el binario correspondiente en las rutas del sistema (variable PATH), genera un proceso hijo mediante fork() e exec() y devuelve los resultados a la salida estándar (stdout).')">📖 Ver Cita</button>.
+                        </p>
+                    </div>
+
+                    <div class="space-y-6 pt-8 border-t-2 border-slate-800">
+                        <h3 class="text-h2 text-sky-400">2. Comparativa de Consolas</h3>
+                        <div class="grid grid-cols-1 gap-6">
+                            <div class="bg-slate-900 p-6 rounded-2xl border-l-8 border-slate-500">
+                                <h4 class="text-h3 text-white mb-2">Windows CMD</h4>
+                                <p class="text-slate-300">Basada en MS-DOS. Orientada a procesamiento de texto plano y archivos por lotes (batch files)
+                                <button class="cite-btn" onclick="showCitation('Windows Administration', 'John Paul Mueller', '2007', 'p. 57', 'Orientado a procesamiento de texto plano y ejecución secuencial de archivos por lotes (batch files).')">📖 Cita</button>.</p>
+                            </div>
+                            <div class="bg-blue-950/40 p-6 rounded-2xl border-l-8 border-blue-500">
+                                <h4 class="text-h3 text-blue-400 mb-2">Windows PowerShell (PS)</h4>
+                                <p class="text-slate-300">Cmdlets Verbo-Sustantivo. Orientado a objetos en .NET. Transmite instancias completas en lugar de texto simple
+                                <button class="cite-btn" onclick="showCitation('Windows PowerShell Networking Guide', 'Ed Wilson', '2018', 'p. 10', 'No canaliza cadenas de texto simple de un comando a otro, sino instancias completas de objetos de .NET, lo que permite extraer propiedades sin procesamiento de texto complejo (parsing).')">📖 Cita</button>.</p>
+                            </div>
+                            <div class="bg-emerald-950/30 p-6 rounded-2xl border-l-8 border-emerald-500">
+                                <h4 class="text-h3 text-emerald-400 mb-2">Linux Bash</h4>
+                                <p class="text-slate-300">Comandos GNU independientes. Filosofía "hacer una sola cosa bien" usando texto plano como interfaz universal
+                                <button class="cite-btn" onclick="showCitation('The Linux Command Line', 'William Shotts', '2019', 'p. 304', 'Filosofía Unix de hacer una sola cosa bien y utilizar texto plano como la interfaz universal de comunicación. Altamente portable y enfocado en la redirección de entrada/salida.')">📖 Cita</button>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            <div class="max-w-4xl mx-auto space-y-12 animate-[fadeIn_0.5s_ease-out]">
-                
-                <div>
-                    <h2 class="text-4xl font-bold text-white mb-2 border-b-2 border-slate-800 pb-4">Bienvenida e Introducción a la CLI</h2>
-                    <p class="texto-lectura text-slate-400 mt-4">Comprende la filosofía que separa a los usuarios convencionales de los administradores de sistemas avanzados.</p>
+            <div class="w-[40%] bg-slate-900 border-l-4 border-sky-900/50 flex flex-col shadow-2xl relative z-10">
+                <div class="p-6 border-b-2 border-slate-800 bg-slate-950">
+                    <p class="text-sky-400 font-bold mb-2 uppercase tracking-widest text-small">Reto Interactivo 0</p>
+                    <p class="text-slate-200">Verifica la variable de entorno PATH.</p>
+                    <p class="text-slate-500 font-mono text-tiny mt-2">Prueba escribiendo: <code class="text-emerald-400">echo %PATH%</code> o equivócate escribiendo <code class="text-rose-400">dir</code></p>
                 </div>
-
-                <!-- 1. Filosofía -->
-                <div class="space-y-6">
-                    <h3 class="text-3xl font-bold text-sky-400 flex items-center gap-3">
-                        <span class="text-4xl">1.</span> Filosofía de Consola (CLI) vs. GUI
-                    </h3>
-                    
-                    <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
-                        <h4 class="text-xl font-bold text-slate-200 mb-4 font-mono text-sky-300">ACRÓNIMOS CLAVE</h4>
-                        <ul class="texto-lectura space-y-3 text-slate-300">
-                            <li><strong class="text-sky-400">CLI:</strong> Command Line Interface (Interfaz de Línea de Comandos).</li>
-                            <li><strong class="text-sky-400">GUI:</strong> Graphical User Interface (Interfaz Gráfica de Usuario).</li>
-                        </ul>
+                <div id="term0" class="flex-grow bg-black p-8 font-mono text-[26px] overflow-y-auto custom-scroll border-[3px] border-transparent transition-all" onclick="document.getElementById('input0').focus()">
+                    <div id="out0" class="space-y-3 mb-4 text-slate-300">
+                        Microsoft Windows [Version 10.0.19045.3324]<br>
                     </div>
-
-                    <div class="texto-lectura text-slate-300 space-y-6">
-                        <p>
-                            <strong class="text-white">Explicación Teórica Profunda:</strong> La transición histórica de los sistemas operativos supuso el paso de entornos puramente textuales a sistemas gráficos. Mientras que la GUI oculta la complejidad del sistema mediante abstracciones visuales (iconos, menús desplegables), limita la velocidad, precisión y la capacidad de automatización del administrador de sistemas. La CLI se fundamenta en la transmisión de flujos de texto que se comunican directamente con el shell del sistema operativo. Esto permite la composición de comandos complejos mediante tuberías (pipelines) y el control absoluto del entorno.
-                        </p>
-                        <button onclick="showCitation('The Linux Command Line', 'William Shotts', '2019', 'p. xvi', 'La CLI se fundamenta en la transmisión de flujos de texto que se comunican directamente con el shell del sistema operativo. Esto permite la composición de comandos complejos mediante tuberías (pipelines) y el control absoluto del entorno.')" class="btn-glow-sky bg-sky-900/20 text-sky-400 px-4 py-2 rounded-lg text-lg font-bold flex items-center gap-2 w-max">
-                            <span>📖</span> Ver Cita Bibliográfica
-                        </button>
-
-                        <p>
-                            <strong class="text-white">Funcionamiento Interno:</strong> En el sistema operativo, la GUI actúa como un cliente del servidor gráfico que envía eventos de ratón y teclado, traduciéndolos a llamadas del sistema. En contraste, un intérprete de comandos o shell (como <code class="text-emerald-400 bg-black px-2 py-1 rounded">CMD.EXE</code>, <code class="text-blue-400 bg-black px-2 py-1 rounded">powershell.exe</code> o <code class="text-emerald-400 bg-black px-2 py-1 rounded">/bin/bash</code>) lee directamente de la entrada estándar (stdin), interpreta sintácticamente la cadena, busca el binario correspondiente en las rutas del sistema (variable PATH), genera un proceso hijo mediante fork() e exec() y devuelve los resultados a la salida estándar (stdout).
-                        </p>
-                        <button onclick="showCitation('Windows Administration at the Command Line', 'John Paul Mueller', '2007', 'p. 135', 'Un intérprete de comandos lee directamente de la entrada estándar, busca el binario, genera un proceso hijo y devuelve resultados a la salida estándar.')" class="btn-glow-sky bg-sky-900/20 text-sky-400 px-4 py-2 rounded-lg text-lg font-bold flex items-center gap-2 w-max">
-                            <span>📖</span> Ver Cita Bibliográfica
-                        </button>
-                    </div>
-
-                    <!-- Estructura de flujo ASCII -->
-                    <div class="bg-black p-6 rounded-xl border border-slate-700 font-mono text-emerald-400 text-lg overflow-x-auto">
-                        <pre>
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                             ESTRUCTURA DE FLUJO                             │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  [CLI / Entrada Estándar (stdin)] ──> [Intérprete (Shell / CLR)]            │
-│                                                │                            │
-│  [Visualización de Salida] <── [Llamadas al Núcleo / Kernel] <──────────────┘
-└─────────────────────────────────────────────────────────────────────────────┘
-                        </pre>
+                    <div class="flex items-center">
+                        <span class="text-slate-400 shrink-0 mr-3">C:\Users\Estudiante&gt;</span>
+                        <input type="text" id="input0" class="bg-transparent border-none outline-none text-white w-full caret-transparent" autocomplete="off" spellcheck="false" onkeydown="handleTerminal(event, 0, 'echo %PATH%', 'C:\\Windows\\system32;C:\\Windows;<br><span class=\'text-emerald-400\'><br>[OK] Variable consultada exitosamente.</span>')">
+                        <span class="w-3 h-8 bg-slate-400 cursor-blink -ml-2"></span>
                     </div>
                 </div>
-
-                <!-- 2. Comparativa -->
-                <div class="space-y-6 pt-8 border-t border-slate-800">
-                    <h3 class="text-3xl font-bold text-sky-400 flex items-center gap-3">
-                        <span class="text-4xl">2.</span> Comparativa: CMD vs. PowerShell vs. Bash
-                    </h3>
-                    
-                    <div class="grid grid-cols-1 gap-6 texto-lectura">
-                        <!-- CMD -->
-                        <div class="bg-slate-900 p-6 rounded-xl border-l-4 border-slate-500">
-                            <h4 class="font-bold text-white mb-2">Windows CMD (Símbolo del Sistema)</h4>
-                            <p class="text-slate-300"><strong class="text-slate-400">Sintaxis:</strong> Basada en comandos internos históricos de MS-DOS (dir, copy, del).</p>
-                            <p class="text-slate-300 mt-2"><strong class="text-slate-400">Paradigma:</strong> Orientado a procesamiento de texto plano y ejecución secuencial de archivos por lotes (batch files).</p>
-                            <button onclick="showCitation('Windows Administration at the Command Line', 'John Paul Mueller', '2007', 'p. 57', 'Paradigma orientado a procesamiento de texto plano y ejecución secuencial de archivos por lotes (batch files).')" class="btn-glow-sky bg-sky-900/20 text-sky-400 px-3 py-1 rounded-lg text-base font-bold mt-4">📖 Cita</button>
-                        </div>
-
-                        <!-- PowerShell -->
-                        <div class="bg-blue-950/30 p-6 rounded-xl border-l-4 border-blue-500">
-                            <h4 class="font-bold text-blue-400 mb-2">Windows PowerShell (PS)</h4>
-                            <p class="text-slate-300"><strong class="text-blue-300">Sintaxis:</strong> Cmdlets estructurados bajo nomenclatura Verbo-Sustantivo (ej. <code class="bg-black px-1 rounded">Get-NetIPAddress</code>).</p>
-                            <p class="text-slate-300 mt-2"><strong class="text-blue-300">Paradigma:</strong> Orientado a objetos basados en Microsoft .NET (CLR). Transmite instancias completas de objetos, evitando el parsing complejo de texto simple.</p>
-                            <button onclick="showCitation('Windows PowerShell Networking Guide', 'Ed Wilson', '2018', 'p. 10', 'Orientado a objetos basados en .NET. No canaliza cadenas de texto simple, sino instancias completas de objetos.')" class="btn-glow-sky bg-sky-900/20 text-sky-400 px-3 py-1 rounded-lg text-base font-bold mt-4">📖 Cita</button>
-                        </div>
-
-                        <!-- Bash -->
-                        <div class="bg-emerald-950/20 p-6 rounded-xl border-l-4 border-emerald-500">
-                            <h4 class="font-bold text-emerald-400 mb-2">Linux Bash (Bourne Again SHell)</h4>
-                            <p class="text-slate-300"><strong class="text-emerald-300">Sintaxis:</strong> Comandos modulares y utilidades GNU independientes.</p>
-                            <p class="text-slate-300 mt-2"><strong class="text-emerald-300">Paradigma:</strong> Filosofía Unix de "hacer una sola cosa bien" usando texto plano como interfaz universal. Enfocado fuertemente en redirección de I/O.</p>
-                            <button onclick="showCitation('The Linux Command Line', 'William Shotts', '2019', 'p. 304', 'Filosofía Unix de hacer una sola cosa bien y utilizar texto plano como la interfaz universal de comunicación.')" class="btn-glow-sky bg-sky-900/20 text-sky-400 px-3 py-1 rounded-lg text-base font-bold mt-4">📖 Cita</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. Errores y Diagnóstico -->
-                <div class="space-y-6 pt-8 border-t border-slate-800 pb-12">
-                    <h3 class="text-3xl font-bold text-rose-400 flex items-center gap-3">
-                        <span class="text-4xl">3.</span> Errores Comunes y Soluciones
-                    </h3>
-                    
-                    <div class="bg-rose-950/20 p-6 rounded-xl border border-rose-900 texto-lectura text-slate-300">
-                        <p><strong class="text-rose-400 text-2xl">Error:</strong> <code class="bg-black text-rose-300 px-2 py-1 rounded">"El sistema no puede encontrar la ruta especificada"</code> o <code class="bg-black text-rose-300 px-2 py-1 rounded">"Command not found"</code>.</p>
-                        
-                        <p class="mt-4"><strong class="text-orange-400">Causa Raíz:</strong> El ejecutable invocado no se encuentra en las rutas definidas dentro del entorno de variables globales del sistema (PATH).</p>
-                        
-                        <div class="mt-6 space-y-4">
-                            <strong class="text-emerald-400">Solución Paso a Paso:</strong>
-                            <ol class="list-decimal pl-8 space-y-3">
-                                <li>
-                                    En Windows, verificar el contenido de %PATH% con: <code class="bg-black px-2 py-1 rounded text-sky-300">echo %PATH%</code>
-                                </li>
-                                <li>
-                                    En Linux, verificar $PATH con: <code class="bg-black px-2 py-1 rounded text-emerald-300">echo $PATH</code>
-                                    <button onclick="showCitation('Linux Basics for Hackers', 'OccupyTheWeb', '2019', 'p. 74', 'Verificar el entorno de variables globales con echo $PATH para identificar binarios faltantes.')" class="btn-glow-sky bg-sky-900/20 text-sky-400 px-2 py-1 rounded text-sm font-bold ml-2">📖 Cita</button>
-                                </li>
-                                <li>
-                                    Añadir temporal o permanentemente la ruta al ejecutable:<br>
-                                    <span class="text-sky-300 font-mono text-xl block mt-2">Windows: set PATH=%PATH%;C:\Ruta\Al\Ejecutable</span>
-                                    <button onclick="showCitation('Windows Administration at the Command Line', 'John Paul Mueller', '2007', 'p. 37', 'Añadir de forma temporal o permanente la ruta al ejecutable usando set PATH=...')" class="btn-glow-sky bg-sky-900/20 text-sky-400 px-2 py-1 rounded text-sm font-bold mt-2">📖 Cita</button>
-                                    <br>
-                                    <span class="text-emerald-300 font-mono text-xl block mt-4">Linux: export PATH=$PATH:/ruta/al/ejecutable</span>
-                                    <button onclick="showCitation('The Linux Command Line', 'William Shotts', '2019', 'p. 131', 'Modificar el entorno exportando la variable PATH para incluir nuevas rutas a binarios.')" class="btn-glow-sky bg-sky-900/20 text-sky-400 px-2 py-1 rounded text-sm font-bold mt-2">📖 Cita</button>
-                                </li>
-                            </ol>
-                        </div>
-                    </div>
-                </div>
-
             </div>
         </section>
 
         <!-- =========================================================
-             PANEL DERECHO: CONSOLA INTERACTIVA (40%)
+             MÓDULO 1: CONTACTO (SPLIT 60/40)
              ========================================================= -->
-        <section class="w-[40%] bg-slate-900 border-l border-sky-900/50 flex flex-col relative z-10 shadow-[-10px_0_20px_rgba(0,0,0,0.5)]">
-            
-            <!-- Selector de Consolas -->
-            <div class="bg-slate-950 p-4 border-b border-slate-800 flex justify-between items-center gap-2">
-                <div class="flex gap-2">
-                    <button onclick="setConsole('cmd')" id="tab-cmd" class="btn-glow-sky bg-slate-800 text-slate-300 font-bold font-mono px-4 py-2 rounded text-sm">CMD</button>
-                    <button onclick="setConsole('ps')" id="tab-ps" class="btn-glow-sky bg-slate-800 text-slate-300 font-bold font-mono px-4 py-2 rounded text-sm">PowerShell</button>
-                    <button onclick="setConsole('bash')" id="tab-bash" class="btn-glow-emerald bg-slate-800 text-slate-300 font-bold font-mono px-4 py-2 rounded text-sm">Bash</button>
-                </div>
-                <div class="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] animate-pulse" title="Terminal Lista"></div>
-            </div>
+        <section id="mod1" class="tab-content hidden w-full h-full">
+            <div class="w-[60%] h-full overflow-y-auto custom-scroll p-10">
+                <div class="max-w-5xl mx-auto space-y-12">
+                    <h2 class="text-h1 text-white border-b-4 border-slate-800 pb-4">Módulo 1: Primer Contacto</h2>
+                    
+                    <!-- cls vs clear -->
+                    <div class="space-y-6">
+                        <h3 class="text-h2 text-sky-400">1. Limpieza de Terminal: cls vs. clear</h3>
+                        <p class="text-slate-300">
+                            <strong class="text-white">Acrónimo:</strong> CLS: Clear Screen (Limpiar Pantalla).<br>
+                            <strong class="text-white">Funcionamiento Interno:</strong> En Windows, <code>cls</code> borra el búfer de caracteres de <code>conhost.exe</code>. En Linux, <code>clear</code> consulta la base de datos <em>terminfo</em> y envía secuencias ANSI (ej. <code>\033[2J</code>) para limpiar el área visible 
+                            <button class="cite-btn" onclick="showCitation('The Linux Command Line', 'William Shotts', '2019', 'p. 271', 'clear consulta la base de datos terminfo para obtener las secuencias de escape ANSI correctas para el tipo de terminal activa (por ejemplo, \\033[2J y \\033[H), enviándolas a stdout para indicarle al emulador que limpie el área visible de la pantalla.')">📖 Cita</button>.
+                        </p>
+                    </div>
 
-            <!-- Panel de Tareas -->
-            <div class="bg-slate-800/50 p-4 border-b border-slate-800">
-                <p class="text-sky-400 font-bold text-sm mb-1">MISIÓN ACTUAL:</p>
-                <p id="mission-text" class="text-slate-300 text-lg">Consulta la variable de entorno PATH en el sistema actual.</p>
-                <p id="hint-text" class="text-slate-500 text-sm font-mono mt-1">Hint: Usa 'echo %PATH%'</p>
-            </div>
+                    <!-- dir vs ls -->
+                    <div class="space-y-6 pt-8 border-t-2 border-slate-800">
+                        <h3 class="text-h2 text-sky-400">2. Listar Directorios: dir vs. ls</h3>
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="bg-slate-900 p-6 rounded-2xl border-l-8 border-slate-500">
+                                <h4 class="font-bold text-white mb-2">Windows: dir [/A] [/S] [/B]</h4>
+                                <ul class="list-disc pl-6 text-slate-300 space-y-2">
+                                    <li><strong class="text-sky-300">/A:</strong> Muestra atributos específicos.</li>
+                                    <li><strong class="text-sky-300">/S:</strong> Recursivo en subdirectorios <button class="cite-btn" onclick="showCitation('Windows Administration', 'John Paul Mueller', '2007', 'p. 73', 'Muestra los archivos en el directorio especificado y en todos los subdirectorios de manera recursiva.')">📖 Cita</button>.</li>
+                                    <li><strong class="text-sky-300">/B:</strong> Formato básico sin encabezados.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-emerald-950/30 p-6 rounded-2xl border-l-8 border-emerald-500">
+                                <h4 class="font-bold text-emerald-400 mb-2">Linux: ls [-l] [-a] [-h]</h4>
+                                <ul class="list-disc pl-6 text-slate-300 space-y-2">
+                                    <li><strong class="text-emerald-300">-l:</strong> Formato largo (permisos, dueño, tamaño) <button class="cite-btn" onclick="showCitation('Linux Basics for Hackers', 'OccupyTheWeb', '2019', 'p. 230', 'Formato de listado largo, que expone los permisos, enlaces, dueño, grupo, tamaño y marca de tiempo.')">📖 Cita</button>.</li>
+                                    <li><strong class="text-emerald-300">-a:</strong> Todos (incluye ocultos con punto).</li>
+                                    <li><strong class="text-emerald-300">-h:</strong> Tamaños legibles (4K, 12M).</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Explicación MAC / Línea a línea -->
+                        <div class="bg-black p-6 rounded-2xl border-2 border-slate-700 font-mono text-[20px] text-slate-300 overflow-x-auto leading-loose">
+                            <div class="text-emerald-400 mb-4 font-bold">// DESGLOSE LÍNEA POR LÍNEA: ls -lh</div>
+                            <div><span class="text-sky-400 font-bold">drwxr-xr-x</span> 2 <span class="text-rose-400 font-bold">root root</span> <span class="text-yellow-400 font-bold">4.0K</span> Aug 21 18:38 manuales/</div>
+                            <div class="text-slate-500">
+│└┬──────┘ │ └┬┘  └┬┘  └┬┘  └──────┬─────┘ └───┬───┘<br>
+│ │        │  │    │    │          │           └─ Nombre del dir/archivo<br>
+│ │        │  │    │    │          └─ Fecha última modificación<br>
+│ │        │  │    │    └─ Tamaño legible humano (<span class="text-yellow-400">4.0K</span> = 4 Kilobytes)<br>
+│ │        │  │    └─ Grupo propietario (<span class="text-rose-400">root</span>)<br>
+│ │        │  └─ Usuario propietario (<span class="text-rose-400">root</span>)<br>
+│ │        └─ Número de enlaces físicos al nodo<br>
+│ └─ Permisos detallados: r (lectura), w (escritura), x (ejecución)<br>
+└─ Tipo de recurso: <span class="text-sky-400">d</span> (directorio), - (archivo), l (enlace)
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Área de la Terminal -->
-            <div id="terminal-container" class="flex-grow bg-black p-6 font-mono text-xl overflow-y-auto custom-scroll relative">
-                
-                <div id="terminal-output" class="space-y-2 mb-2">
-                    <!-- Log de comandos previos se inserta aquí -->
-                    <div class="text-slate-500">Microsoft Windows [Version 10.0.19045.3324]</div>
-                    <div class="text-slate-500">(c) Microsoft Corporation. All rights reserved.</div>
-                    <br>
-                </div>
-                
-                <!-- Línea de input interactiva -->
-                <div class="flex items-center gap-2">
-                    <span id="prompt-text" class="text-slate-300 shrink-0">C:\Users\Estudiante&gt;</span>
-                    <input type="text" id="cmd-input" class="bg-transparent border-none outline-none text-white flex-grow font-mono text-xl w-full caret-transparent" autocomplete="off" spellcheck="false" autofocus onkeydown="handleEnter(event)">
-                    <span class="w-2.5 h-6 bg-slate-400 cursor-blink -ml-2"></span>
+                    <!-- SSH -->
+                    <div class="space-y-6 pt-8 border-t-2 border-slate-800">
+                        <h3 class="text-h2 text-sky-400">3. Acceso Remoto: Telnet vs. SSH</h3>
+                        <p class="text-slate-300">
+                            <strong class="text-white">SSH (Secure Shell):</strong> Proporciona un canal cifrado mediante criptografía de clave pública para autenticación y cifrado simétrico para el tráfico, operando por defecto sobre el puerto TCP 22. Telnet, en cambio, transmite todo en texto plano (vulnerable a packet sniffing) 
+                            <button class="cite-btn" onclick="showCitation('Computer Networks / Linux Basics for Hackers', 'Tanenbaum et al. / OccupyTheWeb', '2021 / 2019', 'p. 23 / 257', 'Telnet transmite todas las credenciales y flujos de comandos en texto plano. SSH proporciona un canal de comunicación cifrado mediante criptografía de clave pública para autenticación y cifrado simétrico para el tráfico de datos, operando por defecto sobre el puerto TCP 22.')">📖 Cita</button>.
+                        </p>
+                    </div>
                 </div>
             </div>
             
+            <div class="w-[40%] bg-slate-900 border-l-4 border-sky-900/50 flex flex-col shadow-2xl relative z-10">
+                <div class="p-6 border-b-2 border-slate-800 bg-slate-950">
+                    <p class="text-emerald-400 font-bold mb-2 uppercase tracking-widest text-small">Reto Interactivo 1: Acceso Seguro</p>
+                    <p class="text-slate-200">Simula una conexión SSH al servidor Ubuntu.</p>
+                    <p class="text-slate-500 font-mono text-tiny mt-2">Comando esperado: <code class="text-emerald-400">ssh admin42@192.168.1.30</code><br>(Puedes usar <code>clear</code> o <code>cls</code> para limpiar esta terminal también).</p>
+                </div>
+                <div id="term1" class="flex-grow bg-black p-8 font-mono text-[26px] overflow-y-auto custom-scroll border-[3px] border-transparent transition-all" onclick="document.getElementById('input1').focus()">
+                    <div id="out1" class="space-y-3 mb-4 text-slate-300">
+                        Linux Local Host Terminal v2.0<br>
+                    </div>
+                    <div class="flex items-center">
+                        <span id="prompt1" class="text-emerald-400 font-bold shrink-0 mr-3">host@local:~$</span>
+                        <input type="text" id="input1" class="bg-transparent border-none outline-none text-white w-full caret-transparent" autocomplete="off" spellcheck="false" onkeydown="handleTerminalSSH(event)">
+                        <span class="w-3 h-8 bg-slate-400 cursor-blink -ml-2"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             MÓDULO 2: REDES (ASYMMETRIC)
+             ========================================================= -->
+        <section id="mod2" class="tab-content hidden w-full h-full overflow-y-auto custom-scroll p-10">
+            <div class="max-w-7xl mx-auto space-y-12">
+                <h2 class="text-h1 text-white border-b-4 border-slate-800 pb-4">Módulo 2: Direccionamiento IP y Redes</h2>
+                
+                <div class="grid grid-cols-[1fr_450px] gap-10 items-start">
+                    
+                    <!-- Lado Izquierdo: Teoría y Simulador AND -->
+                    <div class="space-y-10">
+                        <div class="space-y-6">
+                            <h3 class="text-h2 text-sky-400">1. IPv4, Clases y Direcciones Privadas</h3>
+                            <p class="text-slate-300">IPv4 usa 32 bits divididos en 4 octetos. Históricamente dividido en clases (A, B, C, D multicast, E experimental). Debido a la escasez, RFC 1918 reservó redes privadas no enrutables públicamente que usan NAT para salir a Internet 
+                            <button class="cite-btn" onclick="showCitation('Redes de computadoras', 'Kurose y Ross', '2017', 'p. 209', 'Normativa de la IETF que reserva bloques específicos de direccionamiento IP para uso interno en redes privadas. Estas direcciones no son enrutables de manera directa en la red global de Internet.')">📖 Cita</button>.</p>
+                        </div>
+
+                        <div class="bg-slate-900 p-8 rounded-2xl border-2 border-slate-700">
+                            <h3 class="text-h2 text-emerald-400 mb-4">Simulador AND Lógico (Subredes CIDR)</h3>
+                            <p class="text-slate-300 mb-6">CIDR elimina las clases rígidas permitiendo asignación flexible mediante una barra (ej. /24). Mueve el deslizador para cambiar la máscara y calcular la red de la IP <strong class="text-white font-mono">192.168.1.135</strong>.</p>
+                            
+                            <div class="mb-6">
+                                <label class="text-sky-300 font-bold mb-2 block">Prefijo CIDR: /<span id="cidr-val">24</span></label>
+                                <input type="range" min="8" max="30" value="24" class="w-full h-3 bg-slate-700 rounded-lg appearance-none cursor-pointer" id="cidr-slider" oninput="updateANDLogic()">
+                            </div>
+
+                            <div class="bg-black p-6 rounded-xl font-mono text-[22px] leading-loose text-slate-300">
+                                <div><span class="text-slate-500">IP (192.168.1.135): </span> 11000000 . 10101000 . 00000001 . 10000111</div>
+                                <div><span class="text-slate-500">Máscara (Binario):  </span> <span id="mask-bin" class="text-yellow-400">11111111 . 11111111 . 11111111 . 00000000</span></div>
+                                <div class="border-b-2 border-slate-700 my-2 w-full"></div>
+                                <div><span class="text-slate-500">Dirección Red:      </span> <span id="net-bin" class="text-emerald-400 font-bold">11000000 . 10101000 . 00000001 . 00000000</span></div>
+                                <div class="mt-4 text-sky-400 font-bold text-[28px] text-right" id="net-dec">Red: 192.168.1.0</div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <h3 class="text-h2 text-sky-400">2. Pila TCP/IP y Puertos (Sockets)</h3>
+                            <p class="text-slate-300">Los números de puerto identifican la aplicación de red destino. Puertos clave:</p>
+                            <ul class="grid grid-cols-2 gap-4 text-slate-300">
+                                <li class="bg-slate-900 p-4 rounded-xl border border-slate-700"><strong class="text-white text-h3">20/21 FTP</strong><br>Transferencia de archivos.</li>
+                                <li class="bg-slate-900 p-4 rounded-xl border border-slate-700"><strong class="text-white text-h3">22 SSH</strong><br>Administración remota segura.</li>
+                                <li class="bg-slate-900 p-4 rounded-xl border border-slate-700"><strong class="text-white text-h3">23 Telnet</strong><br>Inseguro texto plano.</li>
+                                <li class="bg-slate-900 p-4 rounded-xl border border-slate-700"><strong class="text-white text-h3">53 DNS</strong><br>Resolución de nombres.</li>
+                                <li class="bg-slate-900 p-4 rounded-xl border border-slate-700"><strong class="text-white text-h3">67/68 DHCP</strong><br>Asignación automática de IP.</li>
+                                <li class="bg-slate-900 p-4 rounded-xl border border-slate-700"><strong class="text-white text-h3">80/443 HTTP/S</strong><br>Navegación web cifrada.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Lado Derecho: Reto de Puertos -->
+                    <div class="bg-slate-900 border-4 border-sky-900/50 rounded-2xl flex flex-col shadow-2xl relative z-10 h-[600px] sticky top-10">
+                        <div class="p-6 border-b-2 border-slate-800 bg-slate-950 rounded-t-xl">
+                            <p class="text-sky-400 font-bold mb-2 uppercase tracking-widest text-small">Reto Interactivo 2: Puertos</p>
+                            <p class="text-slate-200">Demuestra tus conocimientos de protocolos.</p>
+                        </div>
+                        <div id="term2" class="flex-grow bg-black p-8 font-mono text-[26px] overflow-y-auto custom-scroll border-[3px] border-transparent rounded-b-xl transition-all" onclick="document.getElementById('input2').focus()">
+                            <div id="out2" class="space-y-3 mb-4 text-slate-300">
+                                ──> Escribe el puerto seguro para transferencias de terminal remota (SSH):<br>
+                            </div>
+                            <div class="flex items-center">
+                                <span class="text-sky-400 font-bold shrink-0 mr-3">Puerto:</span>
+                                <input type="text" id="input2" class="bg-transparent border-none outline-none text-white w-full caret-transparent" autocomplete="off" spellcheck="false" onkeydown="handleTerminalPort(event)">
+                                <span class="w-3 h-8 bg-slate-400 cursor-blink -ml-2"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </section>
     </main>
 
-    <!-- =========================================================
-         MODAL EMERGENTE (CITAS BIBLIOGRÁFICAS)
-         ========================================================= -->
-    <div id="citation-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 transition-opacity duration-300 opacity-0">
-        <div class="glass-panel w-[600px] p-8 rounded-2xl shadow-[0_0_30px_rgba(14,165,233,0.2)] transform scale-95 transition-transform duration-300" id="modal-content">
-            <div class="flex justify-between items-start mb-6">
-                <div class="flex items-center gap-3">
-                    <span class="text-3xl">📚</span>
-                    <h3 class="text-2xl font-bold text-sky-400 font-mono">Referencia Bibliográfica</h3>
+    <!-- MODAL CITAS -->
+    <div id="citation-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/70 transition-opacity duration-300 opacity-0">
+        <div class="glass-panel w-[800px] p-10 rounded-[30px] shadow-[0_0_50px_rgba(14,165,233,0.3)] transform scale-95 transition-transform duration-300" id="modal-content">
+            <div class="flex justify-between items-start mb-8">
+                <div class="flex items-center gap-4">
+                    <span class="text-[40px]">📚</span>
+                    <h3 class="text-h2 font-bold text-sky-400 font-mono">Referencia Bibliográfica</h3>
                 </div>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
             </div>
             
-            <div class="space-y-4 text-xl text-slate-200">
-                <div class="grid grid-cols-[100px_1fr] gap-2 items-baseline border-b border-slate-700/50 pb-2">
-                    <span class="text-sky-500 font-bold">Libro:</span>
+            <div class="space-y-6 text-[22px] text-slate-200">
+                <div class="flex border-b-2 border-slate-700/50 pb-3">
+                    <span class="text-sky-500 font-bold w-[120px] shrink-0">Libro:</span>
                     <span id="cite-book" class="italic text-white"></span>
                 </div>
-                <div class="grid grid-cols-[100px_1fr] gap-2 items-baseline border-b border-slate-700/50 pb-2">
-                    <span class="text-sky-500 font-bold">Autor:</span>
+                <div class="flex border-b-2 border-slate-700/50 pb-3">
+                    <span class="text-sky-500 font-bold w-[120px] shrink-0">Autor:</span>
                     <span id="cite-author" class="text-slate-300"></span>
                 </div>
-                <div class="grid grid-cols-[100px_1fr] gap-2 items-baseline border-b border-slate-700/50 pb-2">
-                    <span class="text-sky-500 font-bold">Año:</span>
+                <div class="flex border-b-2 border-slate-700/50 pb-3">
+                    <span class="text-sky-500 font-bold w-[120px] shrink-0">Año:</span>
                     <span id="cite-year" class="text-slate-300"></span>
                 </div>
-                <div class="grid grid-cols-[100px_1fr] gap-2 items-baseline border-b border-slate-700/50 pb-2">
-                    <span class="text-sky-500 font-bold">Página:</span>
+                <div class="flex border-b-2 border-slate-700/50 pb-3">
+                    <span class="text-sky-500 font-bold w-[120px] shrink-0">Sección:</span>
                     <span id="cite-page" class="text-emerald-400 font-mono font-bold"></span>
                 </div>
             </div>
             
-            <div class="mt-6 bg-slate-900/80 p-5 rounded-lg border border-slate-700">
-                <p class="text-slate-400 text-sm uppercase tracking-widest font-bold mb-2">Extracto / Contexto</p>
-                <p id="cite-text" class="text-lg text-slate-300 italic border-l-4 border-sky-500 pl-4"></p>
+            <div class="mt-8 bg-slate-900/90 p-8 rounded-2xl border-2 border-slate-700">
+                <p class="text-slate-400 text-small uppercase tracking-widest font-bold mb-4">Extracto Técnico Original</p>
+                <p id="cite-text" class="text-[24px] text-slate-300 italic border-l-8 border-sky-500 pl-6 leading-relaxed"></p>
             </div>
             
-            <div class="mt-8 text-center">
-                <button onclick="closeModal()" class="btn-glow-sky bg-sky-600 text-white font-bold px-8 py-3 rounded-lg text-lg tracking-wider">CERRAR</button>
+            <div class="mt-10 text-center">
+                <button onclick="closeModal()" class="btn-glow-sky bg-sky-600 text-white font-bold px-10 py-4 rounded-xl text-h3 tracking-wider w-full">CERRAR</button>
             </div>
         </div>
     </div>
 
-    <!-- =========================================================
-         JAVASCRIPT LOGIC & WEB AUDIO API
-         ========================================================= -->
     <script>
-        // ----------------------------------------------------
-        // 1. SISTEMA DE AUDIO (8-bit Synth)
-        // ----------------------------------------------------
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // 1. SISTEMA AUDIO 8-BIT
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
 
         function playSound(type) {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
+            initAudio();
             const now = audioCtx.currentTime;
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            osc.connect(gain); gain.connect(audioCtx.destination);
 
-            if (type === 'blip') { // Para tabs y botones
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(600, now);
-                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            if (type === 'blip') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
                 osc.start(now); osc.stop(now + 0.1);
-            } 
-            else if (type === 'type_tick') { // Al teclear correctamente
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(800, now);
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            } else if (type === 'type_tick') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
                 osc.start(now); osc.stop(now + 0.05);
-            }
-            else if (type === 'error_buzz') { // Al fallar comando
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(150, now);
-                osc.frequency.linearRampToValueAtTime(100, now + 0.3);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.3);
+            } else if (type === 'error_buzz') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
                 osc.start(now); osc.stop(now + 0.3);
-            }
-            else if (type === 'success') { // Al ejecutar comando bien
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(440, now);
-                osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
-                osc.frequency.setValueAtTime(880, now + 0.2); // A5
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0, now + 0.4);
-                osc.start(now); osc.stop(now + 0.4);
+            } else if (type === 'coin') {
+                osc.type = 'square'; osc.frequency.setValueAtTime(987.77, now); osc.frequency.setValueAtTime(1318.51, now + 0.08);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
             }
         }
 
-        // Click listeners para botones UI
-        document.querySelectorAll('button').forEach(btn => {
-            if(!btn.hasAttribute('onclick')) {
-                btn.addEventListener('click', () => playSound('blip'));
-            }
-        });
-
-        // ----------------------------------------------------
-        // 2. LÓGICA DE TERMINAL INTERACTIVA
-        // ----------------------------------------------------
-        let currentOS = 'cmd'; // cmd, ps, bash
-        const inputField = document.getElementById('cmd-input');
-        const outputDiv = document.getElementById('terminal-output');
-        const promptText = document.getElementById('prompt-text');
-        const termContainer = document.getElementById('terminal-container');
-        const missionText = document.getElementById('mission-text');
-        const hintText = document.getElementById('hint-text');
-
-        const consoleConfigs = {
-            'cmd': {
-                prompt: 'C:\\Users\\Estudiante&gt;',
-                color: 'text-slate-300',
-                bgColor: 'bg-black',
-                expectedCmd: 'echo %PATH%',
-                mission: "Consulta la variable de entorno PATH en el sistema local.",
-                hint: "Hint: Usa 'echo %PATH%'",
-                successOutput: "C:\\Windows\\system32;C:\\Windows;C:\\Program Files\\Nodejs\\;<br><br><span class='text-emerald-400'>[OK] Comando ejecutado correctamente en CMD.</span>"
-            },
-            'ps': {
-                prompt: 'PS C:\\&gt;',
-                color: 'text-white',
-                bgColor: 'bg-blue-900',
-                expectedCmd: 'Get-NetIPAddress',
-                mission: "Muestra las direcciones IP utilizando el cmdlet estructurado correspondiente.",
-                hint: "Hint: Verbo-Sustantivo -> 'Get-NetIPAddress'",
-                successOutput: "<span class='text-yellow-300'>IPAddress         : 192.168.1.50</span><br>InterfaceIndex    : 12<br>InterfaceAlias    : Ethernet0<br>AddressFamily     : IPv4<br><br><span class='text-emerald-400'>[OK] Objeto .NET recuperado correctamente.</span>"
-            },
-            'bash': {
-                prompt: '<span class="text-emerald-400 font-bold">kali@admin</span><span class="text-white">:</span><span class="text-blue-400">~</span><span class="text-white">$</span>',
-                color: 'text-slate-200',
-                bgColor: 'bg-black',
-                expectedCmd: 'echo $PATH',
-                mission: "Consulta las rutas de binarios en Bash usando la variable global PATH.",
-                hint: "Hint: Recuerda que es case-sensitive. Usa 'echo $PATH'",
-                successOutput: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin<br><br><span class='text-emerald-400'>[OK] Variable global consultada con éxito.</span>"
-            }
-        };
-
-        function setConsole(os) {
+        // TABS NAVEGACIÓN
+        function switchTab(tabId) {
             playSound('blip');
-            currentOS = os;
-            const config = consoleConfigs[os];
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
             
-            // Reset styles
-            ['cmd', 'ps', 'bash'].forEach(tab => {
-                document.getElementById('tab-' + tab).classList.remove('bg-sky-600', 'bg-emerald-600', 'text-white');
-                document.getElementById('tab-' + tab).classList.add('bg-slate-800', 'text-slate-300');
+            ['mod0','mod1','mod2'].forEach(id => {
+                const btn = document.getElementById('nav-' + id);
+                if(id === tabId) {
+                    btn.classList.replace('bg-slate-800', 'bg-sky-900/40');
+                    btn.classList.replace('text-slate-400', 'text-sky-300');
+                } else {
+                    btn.classList.replace('bg-sky-900/40', 'bg-slate-800');
+                    btn.classList.replace('text-sky-300', 'text-slate-400');
+                }
             });
-            
-            // Active tab style
-            const activeColor = os === 'bash' ? 'bg-emerald-600' : 'bg-sky-600';
-            const activeBtn = document.getElementById('tab-' + os);
-            activeBtn.classList.remove('bg-slate-800', 'text-slate-300');
-            activeBtn.classList.add(activeColor, 'text-white');
-
-            // Apply terminal styles
-            termContainer.className = `flex-grow p-6 font-mono text-xl overflow-y-auto custom-scroll relative ${config.bgColor}`;
-            promptText.innerHTML = config.prompt;
-            inputField.className = `bg-transparent border-none outline-none flex-grow font-mono text-xl w-full caret-transparent ${config.color}`;
-            
-            // Update Mission
-            missionText.innerText = config.mission;
-            hintText.innerText = config.hint;
-
-            // Clear output & focus
-            outputDiv.innerHTML = `<div class="text-slate-400 italic">-- Cambiando entorno a ${os.toUpperCase()} --</div><br>`;
-            inputField.value = '';
-            inputField.focus();
         }
 
-        // Manejar envío de comando
-        function handleEnter(e) {
+        // COMANDOS COMUNES Y ESTADO SSH
+        let isSSHPassword = false;
+
+        function checkCommonCommands(cmd, outDivId, inputEl) {
+            const outDiv = document.getElementById(outDivId);
+            if(cmd === 'cls' || cmd === 'clear') {
+                outDiv.innerHTML = '';
+                inputEl.value = '';
+                playSound('type_tick');
+                return true;
+            }
+            return false;
+        }
+
+        // TERMINAL 0 (MOD 0)
+        function handleTerminal(e, id, expected, successHTML) {
             if(e.key === 'Enter') {
-                const cmd = inputField.value.trim();
-                const config = consoleConfigs[currentOS];
+                const inputEl = document.getElementById('input'+id);
+                const outDiv = document.getElementById('out'+id);
+                const termDiv = document.getElementById('term'+id);
+                const cmd = inputEl.value.trim();
                 
-                // Eco del comando ingresado
-                const promptHtml = config.prompt;
-                outputDiv.innerHTML += `<div>${promptHtml} <span class="${config.color}">${cmd}</span></div>`;
+                if(checkCommonCommands(cmd, 'out'+id, inputEl)) return;
+
+                outDiv.innerHTML += `<div>C:\\Users\\Estudiante&gt; ${cmd}</div>`;
                 
-                if(cmd === '') {
-                    inputField.value = '';
-                    scrollToBottom();
-                    return;
-                }
-
-                if(cmd === config.expectedCmd) {
-                    // Éxito
-                    inputField.disabled = true; // Block input while typing
-                    inputField.value = '';
-                    playSound('success');
-                    
-                    // Efecto de escribir salida (Machine typing effect)
-                    const tempDiv = document.createElement('div');
-                    tempDiv.className = `mt-2 mb-4 ${config.color}`;
-                    outputDiv.appendChild(tempDiv);
-                    
-                    let i = 0;
-                    const textHTML = config.successOutput;
-                    tempDiv.innerHTML = textHTML; // Quick insertion for HTML tags
-                    inputField.disabled = false;
-                    inputField.focus();
-                    scrollToBottom();
-
+                if(cmd === expected) {
+                    playSound('coin');
+                    inputEl.value = '';
+                    outDiv.innerHTML += `<div>${successHTML}</div><br>`;
+                    termDiv.classList.add('terminal-success');
+                    setTimeout(()=>termDiv.classList.remove('terminal-success'), 1000);
                 } else {
-                    // Fallo
                     playSound('error_buzz');
-                    termContainer.classList.add('terminal-error');
-                    setTimeout(() => termContainer.classList.remove('terminal-error'), 400);
-                    
-                    outputDiv.innerHTML += `<div class="text-rose-500 mt-2 mb-4">Error: Comando no reconocido o incorrecto para este entorno. Se esperaba: <span class="bg-rose-900/50 px-2 py-1 text-rose-200 rounded">${config.expectedCmd}</span></div>`;
-                    inputField.value = '';
-                    scrollToBottom();
+                    inputEl.value = '';
+                    outDiv.innerHTML += `<div class="text-rose-500">Error: Comando no reconocido. Prueba '${expected}'</div><br>`;
+                    termDiv.classList.add('terminal-error');
+                    setTimeout(()=>termDiv.classList.remove('terminal-error'), 400);
                 }
-            } else {
-                // Keypress sound
-                if(e.key.length === 1) playSound('type_tick');
+                termDiv.scrollTop = termDiv.scrollHeight;
+            } else if(e.key.length === 1) {
+                playSound('type_tick');
             }
         }
 
-        function scrollToBottom() {
-            termContainer.scrollTop = termContainer.scrollHeight;
+        // TERMINAL 1 (MOD 1 - SSH)
+        function handleTerminalSSH(e) {
+            if(e.key === 'Enter') {
+                const inputEl = document.getElementById('input1');
+                const outDiv = document.getElementById('out1');
+                const termDiv = document.getElementById('term1');
+                const promptSpan = document.getElementById('prompt1');
+                const cmd = inputEl.value.trim();
+
+                if(!isSSHPassword) {
+                    if(checkCommonCommands(cmd, 'out1', inputEl)) return;
+                    
+                    outDiv.innerHTML += `<div>host@local:~$ ${cmd}</div>`;
+                    if(cmd === 'ssh admin42@192.168.1.30') {
+                        playSound('type_tick');
+                        isSSHPassword = true;
+                        inputEl.value = '';
+                        inputEl.type = 'password';
+                        promptSpan.innerText = "admin42@192.168.1.30's password:";
+                    } else {
+                        playSound('error_buzz');
+                        inputEl.value = '';
+                        outDiv.innerHTML += `<div class="text-rose-500">bash: ${cmd}: command not found</div><br>`;
+                        termDiv.classList.add('terminal-error');
+                        setTimeout(()=>termDiv.classList.remove('terminal-error'), 400);
+                    }
+                } else {
+                    // Password entered
+                    outDiv.innerHTML += `<div>admin42@192.168.1.30's password: ********</div>`;
+                    playSound('coin');
+                    inputEl.value = '';
+                    inputEl.type = 'text';
+                    inputEl.disabled = true; // Complete challenge
+                    isSSHPassword = false;
+                    
+                    promptSpan.innerText = "admin42@ubuserver:~$";
+                    outDiv.innerHTML += `<div class="text-emerald-400 mt-2">Welcome to Ubuntu 20.04.4 LTS (GNU/Linux 5.4.0-100-generic x86_64)</div><br><span class="text-sky-300 font-bold">[ÉXITO] Estás conectado remotamente y el tráfico está cifrado.</span><br><br>`;
+                    
+                    termDiv.classList.add('terminal-success');
+                    setTimeout(()=>termDiv.classList.remove('terminal-success'), 1000);
+                }
+                termDiv.scrollTop = termDiv.scrollHeight;
+            } else if(e.key.length === 1) {
+                playSound('type_tick');
+            }
         }
 
-        // Mantenemos el foco en el input al hacer click en la terminal
-        termContainer.addEventListener('click', () => inputField.focus());
+        // TERMINAL 2 (MOD 2 - PUERTO)
+        function handleTerminalPort(e) {
+            if(e.key === 'Enter') {
+                const inputEl = document.getElementById('input2');
+                const outDiv = document.getElementById('out2');
+                const termDiv = document.getElementById('term2');
+                const cmd = inputEl.value.trim();
 
-        // ----------------------------------------------------
-        // 3. LÓGICA DE MODAL PARA CITAS
-        // ----------------------------------------------------
+                outDiv.innerHTML += `<div>Puerto: ${cmd}</div>`;
+                
+                if(cmd === '22') {
+                    playSound('coin');
+                    inputEl.value = '';
+                    inputEl.disabled = true;
+                    outDiv.innerHTML += `<div class="text-emerald-400 font-bold mt-2">[ACCESO CONCEDIDO] Correcto, SSH opera en el puerto 22 de forma cifrada.</div><br>`;
+                    termDiv.classList.add('terminal-success');
+                } else {
+                    playSound('error_buzz');
+                    inputEl.value = '';
+                    outDiv.innerHTML += `<div class="text-rose-500 mt-2 mb-4">ALERTA: El puerto ${cmd} es incorrecto o inseguro. Intenta de nuevo.</div>`;
+                    termDiv.classList.add('terminal-error');
+                    setTimeout(()=>termDiv.classList.remove('terminal-error'), 400);
+                }
+                termDiv.scrollTop = termDiv.scrollHeight;
+            } else if(e.key.length === 1) {
+                playSound('type_tick');
+            }
+        }
+
+        // SIMULADOR AND CIDR
+        function ipToBin(ip) {
+            return ip.split('.').map(n => parseInt(n).toString(2).padStart(8, '0'));
+        }
+        function binToIp(binArr) {
+            return binArr.map(b => parseInt(b, 2)).join('.');
+        }
+
+        function updateANDLogic() {
+            playSound('type_tick');
+            const bits = parseInt(document.getElementById('cidr-slider').value);
+            document.getElementById('cidr-val').innerText = bits;
+            
+            const ipBin = ipToBin("192.168.1.135");
+            const ipFlat = ipBin.join('');
+            
+            let maskFlat = "".padStart(bits, '1').padEnd(32, '0');
+            
+            let andFlat = "";
+            for(let i=0; i<32; i++) {
+                andFlat += (ipFlat[i] === '1' && maskFlat[i] === '1') ? '1' : '0';
+            }
+            
+            // Format to octets
+            const maskArr = maskFlat.match(/.{1,8}/g);
+            const andArr = andFlat.match(/.{1,8}/g);
+            
+            document.getElementById('mask-bin').innerText = maskArr.join(' . ');
+            document.getElementById('net-bin').innerText = andArr.join(' . ');
+            document.getElementById('net-dec').innerText = "Red: " + binToIp(andArr);
+        }
+
+        // MODAL
         const modal = document.getElementById('citation-modal');
         const modalContent = document.getElementById('modal-content');
 
@@ -480,7 +582,6 @@
             document.getElementById('cite-text').innerText = text;
             
             modal.classList.remove('hidden');
-            // Trigger reflow
             void modal.offsetWidth;
             modal.classList.remove('opacity-0');
             modalContent.classList.remove('scale-95');
@@ -492,19 +593,12 @@
             modal.classList.add('opacity-0');
             modalContent.classList.remove('scale-100');
             modalContent.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
+            setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
-        // Cerrar modal al clickear fuera
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-
-        // Init
-        setConsole('cmd');
-
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+        
+        switchTab('mod0'); // Iniciar en módulo 0
     </script>
 </body>
 </html>
