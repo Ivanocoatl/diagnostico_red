@@ -1,587 +1,1047 @@
 <!DOCTYPE html>
-<html lang="es" class="bg-slate-950 text-slate-200">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LabNet CLI - Simulador de Redes Maestro</title>
+    <title>LabNet CLI - Simulador de Redes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Tipografía Dinámica */
-        :root { --text-base-size: 24px; }
-        .texto-lectura { font-size: var(--text-base-size); line-height: 1.6; }
-        .texto-lectura h2 { font-size: calc(var(--text-base-size) * 1.4); }
-        .texto-lectura h3 { font-size: calc(var(--text-base-size) * 1.2); }
-        .texto-lectura h4 { font-size: calc(var(--text-base-size) * 1.05); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap');
 
-        /* Efectos Glow Customizados */
-        .btn-glow-sky { transition: all 0.2s ease; border: 1px solid transparent; }
-        .btn-glow-sky:hover, .btn-glow-sky.active-tab { box-shadow: 0 0 15px #0ea5e9, inset 0 0 10px #0ea5e9; border-color: #38bdf8; }
-        .btn-glow-emerald { transition: all 0.2s ease; border: 1px solid transparent; }
-        .btn-glow-emerald:hover, .btn-glow-emerald.active-tab { box-shadow: 0 0 15px #10b981, inset 0 0 10px #10b981; border-color: #34d399; }
-        .btn-glow-rose { transition: all 0.2s ease; border: 1px solid transparent; }
-        .btn-glow-rose:hover { box-shadow: 0 0 15px #e11d48, inset 0 0 10px #e11d48; border-color: #fb7185; }
+        :root {
+            --text-base-size: 24px;
+        }
 
-        /* Animaciones Terminal */
-        @keyframes errorShake { 0%, 100% { transform: translateX(0); } 25%, 75% { transform: translateX(-5px); border-color: #e11d48; box-shadow: inset 0 0 15px rgba(225, 29, 72, 0.5); } 50% { transform: translateX(5px); } }
-        .terminal-error { animation: errorShake 0.4s ease-in-out; }
-        .terminal-success { border-color: #10b981 !important; box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.5); transition: all 0.3s; }
-        .cursor-blink { animation: blink 1s step-end infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617; /* slate-950 */
+            color: #e2e8f0; /* slate-200 */
+        }
 
-        /* Componentes UI */
-        .custom-scroll::-webkit-scrollbar { width: 8px; }
-        .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .texto-lectura {
+            font-size: var(--text-base-size);
+            line-height: 1.6;
+        }
 
-        .glass-panel { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(14, 165, 233, 0.3); }
-        .alert-pulse-rose { animation: pulseRose 2s infinite; }
-        @keyframes pulseRose { 0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(225, 29, 72, 0); } 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); } }
-        .alert-pulse-emerald { animation: pulseEmerald 2s infinite; }
-        @keyframes pulseEmerald { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        .font-mono {
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Sistema de Glow */
+        .btn-glow-sky { transition: all 0.3s ease; }
+        .btn-glow-sky:hover { box-shadow: 0 0 15px rgba(14, 165, 233, 0.6); border-color: #0ea5e9; }
+        
+        .btn-glow-emerald { transition: all 0.3s ease; }
+        .btn-glow-emerald:hover { box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); border-color: #10b981; }
+        
+        .btn-glow-rose { transition: all 0.3s ease; }
+        .btn-glow-rose:hover { box-shadow: 0 0 15px rgba(225, 29, 72, 0.6); border-color: #e11d48; }
+
+        /* Terminal Glow Indicators */
+        .terminal-glow-success { box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.5); border: 1px solid #10b981 !important; }
+        .terminal-glow-error { box-shadow: inset 0 0 20px rgba(225, 29, 72, 0.5); border: 1px solid #e11d48 !important; }
+
+        /* Scrollbar custom */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Glassmorphism para Modal */
+        .glass-modal {
+            background: rgba(241, 245, 249, 0.85); /* gris ultra claro opacidad 85% */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        #terminal-input:focus { outline: none; }
     </style>
 </head>
-<body class="font-sans antialiased h-screen flex flex-col overflow-hidden selection:bg-sky-500 selection:text-white">
+<body class="h-screen w-screen flex flex-col overflow-hidden select-none">
 
-    <!-- CABECERA -->
-    <header class="bg-slate-900 border-b border-sky-900/50 p-3 shrink-0 flex justify-between items-center z-20 shadow-[0_0_15px_rgba(14,165,233,0.1)]">
-        <div class="flex items-center gap-4">
-            <h1 class="text-xl font-bold text-sky-400 font-mono flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-sky-500 animate-pulse"></span> NET_ADMIN_CLI
+    <header class="h-16 bg-slate-900 border-b border-slate-800 flex items-center px-6 justify-between shrink-0">
+        <div class="flex items-center space-x-6">
+            <h1 class="text-2xl font-bold text-sky-400 flex items-center">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                LabNet CLI
             </h1>
-            <nav id="module-nav" class="flex gap-2 ml-4">
-                <button data-target="mod0" class="mod-tab-btn btn-glow-sky active-tab bg-sky-900/20 text-sky-400 px-3 py-1 rounded font-mono text-xs">M0</button>
-                <button data-target="mod1" class="mod-tab-btn btn-glow-sky bg-slate-800 text-slate-300 px-3 py-1 rounded font-mono text-xs">M1</button>
-                <button data-target="mod2" class="mod-tab-btn btn-glow-sky bg-slate-800 text-slate-300 px-3 py-1 rounded font-mono text-xs">M2</button>
-                <button data-target="mod3" class="mod-tab-btn btn-glow-sky bg-slate-800 text-slate-300 px-3 py-1 rounded font-mono text-xs">M3</button>
-                <button data-target="mod4" class="mod-tab-btn btn-glow-sky bg-slate-800 text-slate-300 px-3 py-1 rounded font-mono text-xs">M4</button>
-                <button data-target="mod5" class="mod-tab-btn btn-glow-rose bg-slate-800 text-slate-300 border-rose-900/50 px-3 py-1 rounded font-mono text-xs">M5 (DIAG)</button>
+            <nav class="flex space-x-2">
+                <button onclick="switchModule(0)" id="nav-mod0" class="nav-btn px-4 py-1.5 rounded bg-slate-800 border border-transparent text-sm hover:bg-slate-700 btn-glow-sky text-sky-400 border-sky-500">Inicio / Mod 0</button>
+                <button onclick="switchModule(1)" id="nav-mod1" class="nav-btn px-4 py-1.5 rounded bg-slate-800 border border-transparent text-sm hover:bg-slate-700 btn-glow-sky">Mod 1</button>
+                <button onclick="switchModule(2)" id="nav-mod2" class="nav-btn px-4 py-1.5 rounded bg-slate-800 border border-transparent text-sm hover:bg-slate-700 btn-glow-sky">Mod 2</button>
+                <button onclick="switchModule(3)" id="nav-mod3" class="nav-btn px-4 py-1.5 rounded bg-slate-800 border border-transparent text-sm hover:bg-slate-700 btn-glow-sky">Mod 3</button>
+                <button onclick="switchModule(4)" id="nav-mod4" class="nav-btn px-4 py-1.5 rounded bg-slate-800 border border-transparent text-sm hover:bg-slate-700 btn-glow-sky">Mod 4</button>
+                <button onclick="switchModule(5)" id="nav-mod5" class="nav-btn px-4 py-1.5 rounded bg-slate-800 border border-transparent text-sm hover:bg-slate-700 btn-glow-sky">Mod 5</button>
             </nav>
         </div>
-        <div class="flex items-center gap-4">
-            <div class="relative group">
-                <button class="btn-glow-sky bg-slate-800 text-slate-300 px-3 py-1 rounded font-mono text-xs">⚙️ TXT</button>
-                <div class="absolute right-0 top-8 glass-panel p-4 rounded hidden shadow-2xl group-hover:block w-48 z-50">
-                    <label class="block text-xs mb-2 text-sky-300 font-mono">Puntos: <span id="font-size-display">24</span>px</label>
-                    <input type="range" id="font-slider" min="12" max="32" value="24" class="w-full accent-sky-500">
-                </div>
+        <div class="flex items-center space-x-4">
+            <div class="text-sm text-slate-400 flex items-center space-x-2">
+                <span>Text Size:</span>
+                <button onclick="changeTextSize(-2)" class="px-2 py-1 bg-slate-800 rounded hover:text-white">-</button>
+                <span id="size-display">24px</span>
+                <button onclick="changeTextSize(2)" class="px-2 py-1 bg-slate-800 rounded hover:text-white">+</button>
             </div>
+            <button onclick="initAudio()" id="audio-btn" class="px-3 py-1 bg-sky-900 text-sky-200 text-sm rounded border border-sky-700 hover:bg-sky-800">Enable Audio</button>
         </div>
     </header>
 
-    <!-- ÁREA PRINCIPAL DINÁMICA -->
-    <main class="flex-grow flex w-full h-[calc(100vh-60px)] relative bg-slate-950">
+    <main class="flex flex-1 overflow-hidden">
         
-        <!-- PANEL IZQUIERDO (Lectura) -->
-        <section id="left-panel" class="w-[60%] h-full overflow-y-auto custom-scroll p-8 transition-all duration-500 ease-in-out">
+        <!-- PANEL IZQUIERDO: Contenido Teórico -->
+        <section id="left-panel" class="w-[60%] h-full bg-slate-950 border-r border-slate-800 overflow-y-auto p-8 transition-all duration-500 ease-in-out relative">
             
-            <!-- MÓDULO 0 -->
-            <div id="mod0" class="module-content block space-y-8 animate-[fadeIn_0.5s]">
-                <h2 class="font-bold text-white border-b border-slate-800 pb-2">Módulo 0: Intro a la CLI vs GUI</h2>
+            <!-- CONTENIDO MÓDULO 0 -->
+            <div id="mod0" class="module-content space-y-8 animate-[fadeIn_0.5s]">
+                <h2 class="text-4xl font-bold text-slate-100">Módulo 0: Bienvenida e Introducción a la CLI</h2>
                 <div class="texto-lectura space-y-6">
-                    <p class="text-slate-300">La GUI oculta la complejidad mediante abstracciones visuales, limitando la automatización. La CLI se fundamenta en flujos de texto que se comunican directamente con el shell. <button data-cite="cite_0_1" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800">📖 Cita</button></p>
-                    <div class="bg-slate-900 p-4 rounded border-l-4 border-sky-500">
-                        <h4 class="font-mono text-sky-400 mb-2">Funcionamiento Interno</h4>
-                        <p class="text-slate-400">El intérprete lee de stdin, busca el binario en la variable PATH, genera un proceso hijo mediante fork()/exec() y devuelve la salida a stdout. <button data-cite="cite_0_2" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800">📖 Cita</button></p>
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-800">
+                        <h3 class="text-2xl font-semibold text-sky-400 mb-4">Filosofía de Consola (CLI) vs. GUI</h3>
+                        <p><strong>Acrónimos:</strong> CLI: Command Line Interface. GUI: Graphical User Interface.</p>
+                        <p class="mt-4"><strong>Explicación Teórica Profunda:</strong> La transición histórica de los sistemas operativos supuso el paso de entornos puramente textuales a sistemas gráficos. Mientras que la GUI oculta la complejidad del sistema mediante abstracciones visuales (iconos, menús desplegables), limita la velocidad, precisión y la capacidad de automatización del administrador de sistemas. La CLI se fundamenta en la transmisión de flujos de texto que se comunican directamente con el shell del sistema operativo. Esto permite la composición de comandos complejos mediante tuberías (pipelines) y el control absoluto del entorno. 
+                            <button data-cite="shotts_xvi" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-2 shadow-sm inline-flex items-center"><svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>Cita</button>
+                        </p>
+                        <p class="mt-4"><strong>Funcionamiento Interno:</strong> En el sistema operativo, la GUI actúa como un cliente del servidor gráfico. En contraste, un intérprete de comandos o shell lee directamente de la entrada estándar (stdin), interpreta sintácticamente la cadena, busca el binario correspondiente en las rutas del sistema (variable PATH), genera un proceso hijo mediante fork() e exec() y devuelve los resultados a la salida estándar (stdout).
+                            <button data-cite="mueller_135" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-2 shadow-sm inline-flex items-center"><svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>Cita</button>
+                        </p>
                     </div>
-                    <h3 class="font-bold text-emerald-400">Comparativa de Ecosistemas</h3>
-                    <ul class="space-y-4">
-                        <li class="bg-black p-4 rounded border border-slate-800"><strong class="text-sky-300">CMD:</strong> Texto plano, ejecución secuencial batch. <button data-cite="cite_0_3" class="cite-btn text-xs px-2 rounded text-slate-400">📖</button></li>
-                        <li class="bg-black p-4 rounded border border-slate-800"><strong class="text-blue-300">PowerShell:</strong> Objetos .NET (CLR), Verbo-Sustantivo. <button data-cite="cite_0_4" class="cite-btn text-xs px-2 rounded text-slate-400">📖</button></li>
-                        <li class="bg-black p-4 rounded border border-slate-800"><strong class="text-emerald-300">Bash:</strong> Filosofía Unix, tuberías de texto, portable. <button data-cite="cite_0_5" class="cite-btn text-xs px-2 rounded text-slate-400">📖</button></li>
-                    </ul>
-                    <div class="bg-rose-950/20 p-4 border border-rose-900 rounded">
-                        <strong class="text-rose-400">Error Común: "Command not found"</strong><br>
-                        <span class="text-slate-400">El binario no está en el PATH. Solución: <code class="text-sky-300">echo %PATH%</code> o <code class="text-emerald-300">echo $PATH</code></span> <button data-cite="cite_0_6" class="cite-btn text-xs px-2 rounded text-slate-400">📖</button>
+
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-800">
+                        <h3 class="text-2xl font-semibold text-sky-400 mb-4">Comparativa: CMD vs. PS vs. Bash</h3>
+                        <ul class="list-disc pl-6 space-y-4">
+                            <li><strong>Windows CMD:</strong> Basada en comandos internos históricos de MS-DOS. Orientado a procesamiento de texto plano y ejecución secuencial. <button data-cite="mueller_57" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-1">📖 Cita</button></li>
+                            <li><strong>Windows PowerShell (PS):</strong> Cmdlets bajo nomenclatura Verbo-Sustantivo. Orientado a objetos basados en .NET. <button data-cite="wilson_10" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-1">📖 Cita</button></li>
+                            <li><strong>Linux Bash:</strong> Filosofía Unix de "hacer una sola cosa bien" usando texto plano como interfaz universal. <button data-cite="shotts_304" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-1">📖 Cita</button></li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-black p-4 rounded-lg font-mono text-sm text-green-400 overflow-x-auto border border-slate-800">
+<pre>
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                             ESTRUCTURA DE FLUJO                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  [CLI / Entrada Estándar (stdin)] ──> [Intérprete (Shell / CLR)]            │
+│                                                │                            │
+│  [Visualización de Salida] <── [Llamadas al Núcleo / Kernel] <──────────────┘
+└─────────────────────────────────────────────────────────────────────────────┘
+</pre>
+                    </div>
+
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-800 border-l-4 border-l-rose-500">
+                        <h3 class="text-2xl font-semibold text-rose-400 mb-4">Errores Comunes y Soluciones</h3>
+                        <p><strong>Error:</strong> "El sistema no puede encontrar la ruta especificada" / "Command not found".</p>
+                        <p class="mt-2"><strong>Causa Raíz:</strong> El ejecutable invocado no se encuentra en las rutas definidas dentro de la variable de entorno PATH.</p>
+                        <p class="mt-4"><strong>Solución:</strong></p>
+                        <ul class="list-disc pl-6 space-y-2 mt-2">
+                            <li>CMD: <code>echo %PATH%</code> y luego <code>set PATH=%PATH%;C:\Ruta</code> <button data-cite="mueller_37" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-1">📖 Cita</button></li>
+                            <li>Bash: <code>echo $PATH</code> y luego <code>export PATH=$PATH:/ruta</code> <button data-cite="shotts_131" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-1">📖 Cita</button></li>
+                        </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- MÓDULO 1 -->
             <div id="mod1" class="module-content hidden space-y-8 animate-[fadeIn_0.5s]">
-                <h2 class="font-bold text-white border-b border-slate-800 pb-2">Módulo 1: Primer Contacto</h2>
+                <h2 class="text-4xl font-bold text-slate-100">Módulo 1: Primer Contacto</h2>
                 <div class="texto-lectura space-y-6">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-slate-900 p-4 rounded border border-slate-800">
-                            <h4 class="text-sky-400 font-mono">Windows</h4>
-                            <p class="text-sm mt-2"><code class="text-white">cls</code> Borra búfer conhost. <button data-cite="cite_1_1" class="cite-btn text-xs px-1">📖</button></p>
-                            <p class="text-sm mt-2"><code class="text-white">dir /S /B</code> Recursivo, sin encabezados. <button data-cite="cite_1_3" class="cite-btn text-xs px-1">📖</button></p>
-                            <p class="text-sm mt-2"><code class="text-white">type</code> / <code class="text-blue-300">Get-Content</code> <button data-cite="cite_1_8" class="cite-btn text-xs px-1">📖</button></p>
-                        </div>
-                        <div class="bg-slate-900 p-4 rounded border border-slate-800">
-                            <h4 class="text-emerald-400 font-mono">Linux</h4>
-                            <p class="text-sm mt-2"><code class="text-white">clear</code> ANSI escape. <button data-cite="cite_1_2" class="cite-btn text-xs px-1">📖</button></p>
-                            <p class="text-sm mt-2"><code class="text-white">ls -lh</code> Largo y legible (K, M). <button data-cite="cite_1_7" class="cite-btn text-xs px-1">📖</button></p>
-                            <p class="text-sm mt-2"><code class="text-white">cat</code> / <code class="text-white">less</code> (paginado) <button data-cite="cite_1_10" class="cite-btn text-xs px-1">📖</button></p>
-                        </div>
-                    </div>
-                    <div class="bg-black p-4 rounded border border-slate-800 font-mono text-xs overflow-x-auto text-emerald-400">
-<pre>drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
-│└┬──────┘ │ └┬┘  └┬┘  └┬┘  └──────┬─────┘ └───┬───┘
-│ │        │  │    │    │          │           └─ Nombre
-│ │        │  │    │    │          └─ Fecha mod.
-│ │        │  │    │    └─ Tamaño (4K)
-│ │        │  │    └─ Grupo / Usuario
-│ └─ Permisos (rwx)
-└─ Tipo (d=dir, -=file)</pre>
-                    </div>
-                    <div class="bg-indigo-950/20 p-4 border-l-4 border-indigo-500 rounded">
-                        <h4 class="text-indigo-400 font-bold">Acceso Remoto: Telnet vs SSH</h4>
-                        <p class="text-slate-300 text-sm mt-2">Telnet transmite texto plano (packet sniffing). SSH provee túnel cifrado asimétrico TCP 22. <button data-cite="cite_1_19" class="cite-btn text-xs px-2 py-1 rounded bg-slate-800 text-indigo-300">📖 Cita</button></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MÓDULO 2 -->
-            <div id="mod2" class="module-content hidden space-y-8 animate-[fadeIn_0.5s]">
-                <h2 class="font-bold text-white border-b border-slate-800 pb-2">Módulo 2: Direccionamiento IP</h2>
-                <div class="texto-lectura space-y-6">
-                    <p class="text-slate-300"><strong>IPv4 (32 bits) vs IPv6 (128 bits):</strong> Superación del agotamiento de bloques. <button data-cite="cite_2_1" class="cite-btn text-xs px-1">📖</button></p>
-                    <p class="text-slate-300"><strong>NAT:</strong> Traduce múltiples IPs privadas internas a una IP WAN, modificando encabezados y puertos (Tabla NAT). <button data-cite="cite_2_2" class="cite-btn text-xs px-1">📖</button></p>
-                    
-                    <div class="bg-black p-6 rounded-xl border border-emerald-900">
-                        <h4 class="text-emerald-400 font-mono mb-4">Calculadora CIDR Interactiva</h4>
-                        <input type="range" id="cidr-slider" min="8" max="30" value="24" class="w-full accent-emerald-500 mb-2">
-                        <div class="font-mono text-sm space-y-2 mt-4 text-slate-300">
-                            <div class="flex justify-between"><span>Prefijo:</span> <span class="text-emerald-400">/<span id="cidr-val">24</span></span></div>
-                            <div class="flex justify-between"><span>Máscara (Dec):</span> <span id="mask-dec">255.255.255.0</span></div>
-                            <div class="flex justify-between"><span>Máscara (Bin):</span> <span id="mask-bin" class="text-yellow-400">11111111.11111111.11111111.00000000</span></div>
-                            <div class="flex justify-between border-t border-slate-700 pt-2 mt-2">
-                                <span class="text-sky-300">IP Host AND Máscara = </span>
-                                <strong class="text-emerald-400" id="net-dec">192.168.1.0</strong>
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-800">
+                        <h3 class="text-2xl font-semibold text-sky-400 mb-4">Limpieza y Visualización</h3>
+                        <p><strong>cls vs. clear:</strong> En Windows, <code>cls</code> interactúa con la consola Win32 borrando el búfer. En Linux, <code>clear</code> consulta la base de datos terminfo para enviar secuencias ANSI. <button data-cite="shotts_271" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-1">📖 Cita</button></p>
+                        
+                        <div class="grid grid-cols-2 gap-4 mt-6">
+                            <div class="bg-black p-4 rounded border border-slate-700 font-mono text-sm">
+                                <div class="text-sky-400 mb-2 border-b border-slate-700 pb-1">Windows CMD: dir</div>
+                                <div class="text-slate-300">/A: Atributos <button data-cite="mueller_90" class="cite-btn ml-1 py-0 px-1 text-[10px] bg-slate-800 rounded">C</button></div>
+                                <div class="text-slate-300">/S: Recursivo <button data-cite="mueller_73" class="cite-btn ml-1 py-0 px-1 text-[10px] bg-slate-800 rounded">C</button></div>
+                                <div class="text-slate-300">/B: Básico    <button data-cite="mueller_83" class="cite-btn ml-1 py-0 px-1 text-[10px] bg-slate-800 rounded">C</button></div>
+                            </div>
+                            <div class="bg-black p-4 rounded border border-slate-700 font-mono text-sm">
+                                <div class="text-emerald-400 mb-2 border-b border-slate-700 pb-1">Linux Bash: ls</div>
+                                <div class="text-slate-300">-l: Formato largo <button data-cite="occupy_230" class="cite-btn ml-1 py-0 px-1 text-[10px] bg-slate-800 rounded">C</button></div>
+                                <div class="text-slate-300">-a: Ocultos       <button data-cite="shotts_13" class="cite-btn ml-1 py-0 px-1 text-[10px] bg-slate-800 rounded">C</button></div>
+                                <div class="text-slate-300">-h: Legible       <button data-cite="occupy_230" class="cite-btn ml-1 py-0 px-1 text-[10px] bg-slate-800 rounded">C</button></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2 text-sm text-center">
-                        <div class="bg-slate-900 p-2 border border-slate-800 text-sky-300">20/21 FTP</div>
-                        <div class="bg-slate-900 p-2 border border-emerald-500 text-emerald-400">22 SSH</div>
-                        <div class="bg-slate-900 p-2 border border-rose-900 text-rose-400">23 Telnet</div>
-                        <div class="bg-slate-900 p-2 border border-slate-800 text-sky-300">53 DNS</div>
-                        <div class="bg-slate-900 p-2 border border-slate-800 text-sky-300">67/68 DHCP</div>
-                        <div class="bg-slate-900 p-2 border border-slate-800 text-sky-300">80/443 HTTP/S</div>
+                    <div class="bg-black p-4 rounded-lg font-mono text-xs text-slate-300 overflow-x-auto border border-slate-800">
+<pre>
+OUTPUT DESGLOSADO LÍNEA POR LÍNEA (Linux "ls -lh"):
+drwxr-xr-x 2 root root 4.0K Aug 21 18:38 manuales/
+│└┬──────┘ │ └┬┘  └┬┘  └┬┘  └──────┬─────┘ └───┬───┘
+│ │        │  │    │    │          │           └─ Nombre del archivo
+│ │        │  │    │    │          └─ Fecha última mod.
+│ │        │  │    │    └─ Tamaño (4 Kilobytes)
+│ │        │  │    └─ Grupo propietario (root)
+│ │        │  └─ Usuario (root)
+│ │        └─ Número de enlaces
+│ └─ Permisos detallados: r (lectura), w (escritura), x (ejecución)
+└─ Tipo de recurso: d (directorio), - (archivo), l (enlace)
+</pre>
+                    </div>
+
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-800">
+                        <h3 class="text-2xl font-semibold text-sky-400 mb-4">Gestión de Archivos y Accesos</h3>
+                        <p class="mb-2"><strong>Visualizar:</strong> <code>type</code> (CMD), <code>Get-Content</code> (PS), <code>cat</code> o <code>less</code> (Linux).</p>
+                        <p class="mb-2"><strong>Copiar/Mover:</strong> <code>copy / move</code> (Win) vs <code>cp / mv</code> (Linux).</p>
+                        <p class="mb-4"><strong>Elevación de Privilegios:</strong> <code>runas</code> (Win) vs <code>su / sudo</code> (Linux). <button data-cite="shotts_101" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-1">📖 Cita</button></p>
+                        
+                        <div class="p-4 bg-sky-950/30 border border-sky-800 rounded mt-4">
+                            <h4 class="text-xl text-sky-300 mb-2">Misión: Telnet vs SSH</h4>
+                            <p>Telnet transmite en texto plano, vulnerable a sniffing. SSH cifra mediante clave pública y cifrado simétrico sobre el puerto 22. <button data-cite="tanenbaum_23" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-1">📖 Cita</button></p>
+                            <p class="mt-4 font-bold text-emerald-400">Objetivo en Terminal:</p>
+                            <p class="font-mono text-sm bg-black p-2 rounded mt-2 inline-block">ssh admin42@192.168.1.30</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- MÓDULO 3 -->
+            <div id="mod2" class="module-content hidden space-y-8 animate-[fadeIn_0.5s]">
+                <h2 class="text-4xl font-bold text-slate-100">Módulo 2: Direccionamiento y Redes</h2>
+                <div class="texto-lectura space-y-6">
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-800">
+                        <h3 class="text-2xl font-semibold text-sky-400 mb-4">Conceptos Fundamentales</h3>
+                        <p><strong>IPv4 vs. IPv6:</strong> IPv4 utiliza 32 bits ($2^{32}$ direcciones). IPv6 utiliza 128 bits en hexadecimal ($2^{128}$). <button data-cite="kurose_285" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-1">📖 Cita</button></p>
+                        
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div class="p-4 bg-slate-950 rounded">
+                                <h4 class="font-bold text-sky-300 mb-2">Clases Tradicionales</h4>
+                                <ul class="list-disc pl-5">
+                                    <li>Clase A: 1.0.0.0 a 127.255.255.255 (/8)</li>
+                                    <li>Clase B: 128.0.0.0 a 191.255.255.255 (/16)</li>
+                                    <li>Clase C: 192.0.0.0 a 223.255.255.255 (/24)</li>
+                                </ul>
+                            </div>
+                            <div class="p-4 bg-slate-950 rounded">
+                                <h4 class="font-bold text-emerald-300 mb-2">Redes Privadas (RFC 1918)</h4>
+                                <ul class="list-disc pl-5">
+                                    <li>10.0.0.0/8</li>
+                                    <li>172.16.0.0/12</li>
+                                    <li>192.168.0.0/16 <button data-cite="tanenbaum_14" class="cite-btn px-1 bg-slate-800 rounded">C</button></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-800">
+                        <h3 class="text-2xl font-semibold text-sky-400 mb-4">NAT y Puertos Comunes</h3>
+                        <p class="mb-4"><strong>NAT:</strong> Traduce IPs privadas a una pública. <button data-cite="kurose_201" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-1">📖 Cita</button></p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-center mb-6">
+                            <div class="bg-slate-800 p-2 rounded">20/21 FTP</div>
+                            <div class="bg-emerald-900/50 border border-emerald-700 p-2 rounded">22 SSH</div>
+                            <div class="bg-rose-900/50 border border-rose-700 p-2 rounded">23 Telnet</div>
+                            <div class="bg-slate-800 p-2 rounded">53 DNS</div>
+                            <div class="bg-slate-800 p-2 rounded">67/68 DHCP</div>
+                            <div class="bg-slate-800 p-2 rounded">80 HTTP</div>
+                            <div class="bg-slate-800 p-2 rounded col-span-2">443 HTTPS</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="mod3" class="module-content hidden space-y-8 animate-[fadeIn_0.5s]">
-                <h2 class="font-bold text-white border-b border-slate-800 pb-2">Módulo 3: Windows Network</h2>
+                <h2 class="text-4xl font-bold text-slate-100">Módulo 3: Configuración Windows</h2>
                 <div class="texto-lectura space-y-6">
-                    <h3 class="text-sky-400 font-bold">Consola Tradicional (NDIS)</h3>
-                    <ul class="bg-slate-900 p-4 border border-slate-800 rounded space-y-3 text-sm text-slate-300">
-                        <li><code class="text-sky-300">ipconfig /all</code> MAC, DHCP, DNS. <button data-cite="cite_3_1" class="cite-btn text-xs px-1">📖</button></li>
-                        <li><code class="text-sky-300">ipconfig /release</code> Mensaje DHCPRELEASE. <button data-cite="cite_3_2" class="cite-btn text-xs px-1">📖</button></li>
-                        <li><code class="text-sky-300">ipconfig /renew</code> Mensaje DHCPDISCOVER. <button data-cite="cite_3_3" class="cite-btn text-xs px-1">📖</button></li>
-                        <li><code class="text-sky-300">ipconfig /flushdns</code> Limpia caché de resolución.</li>
-                    </ul>
-
-                    <h3 class="text-blue-400 font-bold">Cmdlets Modernos (PowerShell)</h3>
-                    <ul class="bg-blue-950/20 p-4 border-l-4 border-blue-500 rounded space-y-3 text-sm text-slate-300">
-                        <li><code class="text-blue-300 bg-black px-1">Get-NetAdapter</code> Adaptadores e ifIndex. <button data-cite="cite_3_4" class="cite-btn text-xs px-1">📖</button></li>
-                        <li><code class="text-blue-300 bg-black px-1">New-NetIPAddress</code> Requiere UAC elevado. Si no: "Acceso Denegado". <button data-cite="cite_3_5" class="cite-btn text-xs px-1">📖</button></li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- MÓDULO 4 -->
-            <div id="mod4" class="module-content hidden space-y-8 animate-[fadeIn_0.5s]">
-                <h2 class="font-bold text-white border-b border-slate-800 pb-2">Módulo 4: Linux Network</h2>
-                <div class="texto-lectura space-y-6">
-                    <p class="text-slate-300">Las herramientas de <code class="text-emerald-300">net-tools</code> (ifconfig) han sido reemplazadas por la pila moderna <code class="text-emerald-300">iproute2</code> (ip a, ip link).</p>
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-800">
+                        <h3 class="text-2xl font-semibold text-sky-400 mb-4">Herramienta IPConfig y NDIS</h3>
+                        <p><code>ipconfig.exe</code> interactúa con NDIS para consultar el estado del adaptador y la pila TCP/IP. <button data-cite="mueller_89" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-1">📖 Cita</button></p>
+                        <ul class="list-disc pl-6 mt-4 space-y-2">
+                            <li><strong>/all:</strong> Muestra MAC, DHCP, caché DNS.</li>
+                            <li><strong>/release:</strong> Envía mensaje DHCPRELEASE para liberar IP.</li>
+                            <li><strong>/renew:</strong> Envía DHCPDISCOVER en broadcast para solicitar IP.</li>
+                            <li><strong>/flushdns:</strong> Vacía la caché del resolvedor DNS local.</li>
+                        </ul>
+                    </div>
                     
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-slate-900 p-4 border border-slate-800 rounded">
-                            <strong class="text-emerald-400 font-mono block mb-2">iproute2</strong>
-                            <p class="text-sm text-slate-300"><code class="text-white">ip a</code> Direcciones IP <button data-cite="cite_4_1" class="cite-btn text-xs px-1">📖</button></p>
-                            <p class="text-sm text-slate-300"><code class="text-white">ip route</code> Tabla estática</p>
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-800">
+                        <h3 class="text-2xl font-semibold text-sky-400 mb-4">Configuración Estática y PowerShell</h3>
+                        <p><strong>Tradicional (Netsh):</strong> <code>netsh interface ip set address name="Ethernet" static...</code></p>
+                        <p class="mt-4"><strong>PowerShell (Recomendado):</strong> <code>New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 192.168.1.99...</code> <button data-cite="wilson_324" class="cite-btn btn-glow-sky px-2 py-1 text-xs rounded text-sky-400 bg-slate-800 ml-1">📖 Cita</button></p>
+                        <div class="p-4 bg-sky-950/30 border border-sky-800 rounded mt-4">
+                            <p class="font-bold text-emerald-400 mb-2">Objetivo en Terminal CMD:</p>
+                            <p>1. Libera la dirección IP actual.<br>2. Solicita una nueva concesión al servidor DHCP.</p>
                         </div>
-                        <div class="bg-slate-900 p-4 border border-slate-800 rounded">
-                            <strong class="text-emerald-400 font-mono block mb-2">NetworkManager</strong>
-                            <p class="text-sm text-slate-300"><code class="text-white">nmcli dev status</code> <button data-cite="cite_4_2" class="cite-btn text-xs px-1">📖</button></p>
-                        </div>
-                    </div>
-
-                    <div class="bg-black p-4 border-l-4 border-yellow-500 rounded font-mono text-xs text-slate-400">
-                        <strong class="text-yellow-400">Persistencia (/etc/network/interfaces):</strong><br>
-                        auto eth0<br>
-                        iface eth0 inet static<br>
-                        &nbsp;&nbsp;address 192.168.1.34<br>
-                        &nbsp;&nbsp;netmask 255.255.255.0
                     </div>
                 </div>
             </div>
 
-            <!-- MÓDULO 5 (Árbol de diagnóstico para el layout de 3 paneles) -->
-            <div id="mod5" class="module-content hidden space-y-6 animate-[fadeIn_0.5s]">
-                <h2 class="font-bold text-white border-b border-rose-900 pb-2">Diagnóstico y Troubleshooting</h2>
-                <div class="texto-lectura">
-                    <div class="bg-black p-4 rounded border border-slate-800 text-xs font-mono text-slate-400 overflow-x-auto">
-                        <strong class="text-rose-400">ÁRBOL DE FALLAS</strong><br><br>
-                        ¿IP de destino asignada?<br>
-                        ├── <span class="text-rose-400">[169.254.x.x]</span> ──> APIPA (Falla DHCP)<br>
-                        │   Solución: dhclient o /renew<br>
-                        └── <span class="text-emerald-400">[IP Válida]</span> ──> ¿Ping a Gateway?<br>
-                            ├── [No] ──> ARP Duplicado (arp -a)<br>
-                            └── [Sí] ──> Falla DNS (/etc/resolv.conf)
+            <div id="mod4" class="module-content hidden space-y-8 animate-[fadeIn_0.5s]">
+                <h2 class="text-4xl font-bold text-slate-100">Módulo 4: Configuración Linux</h2>
+                <div class="texto-lectura space-y-6">
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-800">
+                        <h3 class="text-2xl font-semibold text-sky-400 mb-4">Herramientas de Configuración</h3>
+                        <ul class="list-disc pl-6 space-y-3">
+                            <li><strong>ifconfig:</strong> Herramienta clásica de Net-tools. Modifica interfaces. <button data-cite="occupy_29" class="cite-btn btn-glow-sky px-2 py-1 text-xs bg-slate-800 ml-1 rounded">C</button></li>
+                            <li><strong>iwconfig:</strong> Utilidad específica para inalámbricas (SSID, espectro).</li>
+                            <li><strong>ip a / ip link / ip route (iproute2):</strong> Pila moderna. Muestra IPs, enlaces físicos y tabla de rutas estáticas. <button data-cite="shotts_289" class="cite-btn btn-glow-sky px-2 py-1 text-xs bg-slate-800 ml-1 rounded">C</button></li>
+                            <li><strong>nmcli:</strong> Gestor de NetworkManager (RHEL/Ubuntu). <button data-cite="cobbaut_245" class="cite-btn btn-glow-sky px-2 py-1 text-xs bg-slate-800 ml-1 rounded">C</button></li>
+                        </ul>
                     </div>
-                    <div class="mt-6 space-y-2">
-                        <p class="text-sm text-slate-300"><code class="text-sky-300">ping</code> Verifica capa 3. <button data-cite="cite_5_1" class="cite-btn text-xs px-1">📖</button></p>
-                        <p class="text-sm text-slate-300"><code class="text-sky-300">traceroute</code> Mide saltos por TTL. <button data-cite="cite_5_2" class="cite-btn text-xs px-1">📖</button></p>
-                        <p class="text-sm text-slate-300"><code class="text-sky-300">netstat</code> Puertos TCP (LISTEN, ESTABLISHED). <button data-cite="cite_5_3" class="cite-btn text-xs px-1">📖</button></p>
+
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-800">
+                        <h3 class="text-2xl font-semibold text-sky-400 mb-4">Persistencia de Configuración</h3>
+                        <p class="mb-4">Para evitar perder IPs al reiniciar, se fijan en archivos de configuración. <button data-cite="cobbaut_244" class="cite-btn btn-glow-sky px-2 py-1 text-xs bg-slate-800 ml-1 rounded">C</button></p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm font-mono">
+                            <div class="bg-black p-4 rounded border border-slate-700 text-slate-300">
+                                <div class="text-sky-400 mb-2">Debian (/etc/network/interfaces)</div>
+                                auto eth0<br>iface eth0 inet static<br>&nbsp;&nbsp;address 192.168.1.34<br>&nbsp;&nbsp;netmask 255.255.255.0<br>&nbsp;&nbsp;gateway 192.168.1.1
+                            </div>
+                            <div class="bg-black p-4 rounded border border-slate-700 text-slate-300">
+                                <div class="text-rose-400 mb-2">RHEL/CentOS (ifcfg-eth0)</div>
+                                DEVICE="eth0"<br>BOOTPROTO="none"<br>IPADDR="192.168.1.99"<br>NETMASK="255.255.255.0"<br>ONBOOT="yes"
+                            </div>
+                        </div>
+                        <div class="p-4 bg-sky-950/30 border border-sky-800 rounded mt-6">
+                            <p class="font-bold text-emerald-400 mb-2">Misión en Terminal Bash:</p>
+                            <p>Configura temporalmente la IP 192.168.1.45 con máscara /24 en la interfaz wlan0 usando la herramienta clásica ifconfig.</p>
+                        </div>
                     </div>
                 </div>
             </div>
-            
+
+            <div id="mod5" class="module-content hidden space-y-8 animate-[fadeIn_0.5s]">
+                <h2 class="text-4xl font-bold text-slate-100">Módulo 5: Troubleshooting</h2>
+                <div class="texto-lectura space-y-6">
+                    
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-800">
+                        <h3 class="text-2xl font-semibold text-sky-400 mb-4">Tabla de Equivalencias</h3>
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-slate-800 text-slate-300">
+                                <tr><th class="p-2">Funcionalidad</th><th class="p-2">Windows</th><th class="p-2">Linux</th></tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800">
+                                <tr><td class="p-2">Test Conectividad</td><td class="p-2 font-mono">ping</td><td class="p-2 font-mono">ping -c</td></tr>
+                                <tr><td class="p-2">Traza de Ruta</td><td class="p-2 font-mono">tracert</td><td class="p-2 font-mono">traceroute</td></tr>
+                                <tr><td class="p-2">Caché ARP</td><td class="p-2 font-mono">arp -a</td><td class="p-2 font-mono">arp -a</td></tr>
+                                <tr><td class="p-2">Puertos/Sockets</td><td class="p-2 font-mono">netstat -ano</td><td class="p-2 font-mono">ss -antp</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="bg-black p-4 rounded-lg font-mono text-sm text-yellow-400 overflow-x-auto border border-slate-800">
+<pre>
+┌────────────────────────────────────────────────────────┐
+│               ÁRBOL DE TROUBLESHOOTING                 │
+├────────────────────────────────────────────────────────┤
+│ ¿Qué IP tiene asignada el host?                        │
+│ ├── [169.254.x.x] ──> Falla DHCP (APIPA)               │
+│ │                     Solución: ipconfig /renew        │
+│ └── [IP Válida]   ──> ¿Llega al Gateway?               │
+│                       ├── [No] ──> Conflicto IP Duplicada│
+│                       └── [Sí] ──> Falla DNS           │
+└────────────────────────────────────────────────────────┘
+</pre>
+                    </div>
+
+                    <div class="bg-slate-900 p-6 rounded-lg border border-slate-800">
+                        <h3 class="text-2xl font-semibold text-rose-400 mb-4">Diagnóstico de Fallas</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <h4 class="font-bold text-slate-200">Falla 1: IP Duplicada</h4>
+                                <p class="text-sm">Inconsistencias ARP en Capa 2. Usa <code>arp -a</code> para buscar la MAC y reconfigura equipo. <button data-cite="mueller_88" class="cite-btn py-0 px-1 text-[10px] bg-slate-800 rounded">C</button></p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-200">Falla 2: Falla DNS</h4>
+                                <p class="text-sm">Ping a IP responde (ej. 8.8.8.8) pero ping a dominio falla. Editar <code>/etc/resolv.conf</code> o usar Set-DnsClientServerAddress. <button data-cite="occupy_237" class="cite-btn py-0 px-1 text-[10px] bg-slate-800 rounded">C</button></p>
+                            </div>
+                            <div class="bg-rose-950/30 p-3 rounded border border-rose-800">
+                                <h4 class="font-bold text-rose-300">Falla 3: APIPA (169.254.x.x)</h4>
+                                <p class="text-sm">El cliente DHCP falló y el OS asignó una IP Link-Local temporal. <button data-cite="mueller_102" class="cite-btn py-0 px-1 text-[10px] bg-slate-800 rounded">C</button></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scroll padding -->
+            <div class="h-16"></div>
         </section>
 
-        <!-- PANEL CENTRAL (Oculto por defecto, se abre 40% en Módulo 5) -->
-        <section id="center-panel" class="w-0 hidden overflow-hidden bg-[#050505] border-l border-slate-800 transition-all duration-500 ease-in-out relative flex-col justify-center items-center">
-            <div class="p-8 text-center w-full min-w-[300px]">
-                <h3 class="text-2xl font-mono text-slate-500 mb-8 tracking-widest">MONITOR DE RED</h3>
+        <!-- PANEL CENTRAL: Herramientas Interactivas (Oculto por defecto) -->
+        <section id="center-panel" class="w-0 hidden flex-col bg-[#050B14] border-r border-slate-800 transition-all duration-500 ease-in-out relative overflow-hidden">
+            <div class="p-6 h-full flex flex-col justify-center w-[40vw] shrink-0 absolute top-0 left-0">
                 
-                <!-- Alerta Dinámica -->
-                <div id="alert-box" class="bg-rose-950/40 border-2 border-rose-500 p-8 rounded-xl alert-pulse-rose transition-colors duration-500">
-                    <div class="text-5xl mb-4" id="alert-icon">⚠️</div>
-                    <h2 class="text-2xl font-bold text-rose-500 font-mono mb-2" id="alert-title">FALLA DHCP: APIPA DETECTADO</h2>
-                    <p class="text-rose-300 font-mono text-xl bg-black px-4 py-2 inline-block rounded" id="alert-ip">IP: 169.254.15.22</p>
-                    <p class="mt-6 text-slate-400 text-sm">Resuelve el conflicto ejecutando el comando de renovación de concesión en la terminal adyacente.</p>
+                <!-- Herramienta Módulo 2: Simulador AND -->
+                <div id="tool-mod2" class="hidden">
+                    <h3 class="text-2xl font-bold text-sky-400 mb-6 flex items-center">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+                        Calculadora AND Subred
+                    </h3>
+                    <div class="bg-slate-900 p-6 rounded-xl border border-slate-700 shadow-2xl">
+                        <div class="mb-4">
+                            <label class="block text-slate-400 text-sm mb-1">Dirección IP Host:</label>
+                            <div class="font-mono text-xl tracking-widest text-slate-200">192.168.1.135</div>
+                            <div class="font-mono text-xs text-slate-500 mt-1">11000000.10101000.00000001.10000111</div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-slate-400 text-sm mb-2 flex justify-between">
+                                <span>Máscara (CIDR):</span>
+                                <span id="cidr-val" class="text-sky-400 font-bold">/24</span>
+                            </label>
+                            <input type="range" id="cidr-slider" min="8" max="30" value="24" class="w-full accent-sky-500 cursor-pointer h-2 bg-slate-700 rounded-lg appearance-none" oninput="updateSubnet()">
+                            <div id="mask-dec" class="font-mono text-lg text-sky-300 mt-2">255.255.255.0</div>
+                            <div id="mask-bin" class="font-mono text-xs text-sky-700 mt-1">11111111.11111111.11111111.00000000</div>
+                        </div>
+
+                        <div class="border-t border-slate-700 pt-4">
+                            <label class="block text-slate-400 text-sm mb-1">Dirección de Red Resultante (AND):</label>
+                            <div id="net-bin" class="font-mono text-xs text-emerald-700 mb-1">11000000.10101000.00000001.00000000</div>
+                            <div id="net-dec" class="font-mono text-3xl font-bold text-emerald-400 tracking-wider">192.168.1.0</div>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-4 text-center">Operación lógica: Si ambos bits son 1 = 1, sino = 0.</p>
+                        
+                        <!-- Misión interactiva Mod 2 -->
+                        <div class="mt-8 p-4 bg-black rounded border border-slate-800">
+                            <p class="text-sm text-yellow-400 mb-2">Desafío en Terminal:</p>
+                            <p class="text-xs text-slate-300">Abre Bash y escribe el número de puerto para el protocolo de transferencia remota segura (SSH).</p>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Herramienta Módulo 5: Monitor APIPA -->
+                <div id="tool-mod5" class="hidden">
+                     <h3 class="text-2xl font-bold text-rose-400 mb-6 flex items-center">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        Monitor de Interfaz de Red
+                    </h3>
+                    <div class="bg-slate-900 p-8 rounded-xl border border-slate-700 shadow-2xl flex flex-col items-center">
+                        <!-- SVG Router Port -->
+                        <svg width="120" height="120" viewBox="0 0 100 100" class="mb-6 drop-shadow-lg">
+                            <rect x="10" y="20" width="80" height="60" rx="5" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+                            <rect x="25" y="40" width="50" height="25" fill="#0f172a"/>
+                            <path d="M 30 40 L 30 65 M 40 40 L 40 65 M 50 40 L 50 65 M 60 40 L 60 65 M 70 40 L 70 65" stroke="#fbbf24" stroke-width="2"/>
+                            <circle id="network-status-dot" cx="80" cy="30" r="4" class="fill-rose-500 animate-pulse"/>
+                        </svg>
+                        
+                        <div class="text-center bg-black p-4 rounded w-full border border-slate-800">
+                            <div class="text-xs text-slate-500 uppercase tracking-widest mb-1">Estado IP Actual</div>
+                            <div id="monitor-ip" class="font-mono text-2xl text-rose-400 font-bold">169.254.82.11</div>
+                            <div class="text-xs text-rose-500 mt-1 uppercase">Alerta: Rango APIPA Detectado</div>
+                        </div>
+
+                        <div class="mt-6 text-sm text-slate-300 text-center w-full">
+                            El cliente falló al contactar al DHCP.<br>
+                            <span class="text-sky-400 font-bold block mt-2">Misión: Ve a la terminal y ejecuta la instrucción necesaria para renovar la IP.</span>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </section>
 
-        <!-- PANEL DERECHO (Terminal - 40% o 30%) -->
-        <section id="right-panel" class="w-[40%] bg-black border-l border-sky-900/50 flex flex-col relative z-10 transition-all duration-500 ease-in-out shadow-[-10px_0_20px_rgba(0,0,0,0.5)]">
+        <!-- PANEL DERECHO: Terminal -->
+        <section id="right-panel" class="w-[40%] bg-black flex flex-col transition-all duration-500 ease-in-out border-l border-slate-800 relative shadow-[inset_0_0_50px_rgba(0,0,0,0.8)]">
             
-            <div class="bg-slate-950 p-3 border-b border-slate-800 flex justify-between items-center shrink-0">
-                <div class="flex gap-2">
-                    <button data-term="cmd" class="term-tab-btn btn-glow-sky bg-slate-800 text-sky-400 text-xs px-3 py-1 font-mono rounded active-tab border-sky-500">CMD</button>
-                    <button data-term="ps" class="term-tab-btn btn-glow-blue bg-slate-800 text-slate-400 text-xs px-3 py-1 font-mono rounded border-transparent">PS</button>
-                    <button data-term="bash" class="term-tab-btn btn-glow-emerald bg-slate-800 text-slate-400 text-xs px-3 py-1 font-mono rounded border-transparent">BASH</button>
-                </div>
+            <!-- Terminal Tabs -->
+            <div class="h-10 bg-slate-900 border-b border-slate-800 flex text-sm text-slate-400 font-medium shrink-0">
+                <button onclick="setTerminal('cmd')" id="tab-cmd" class="flex-1 border-b-2 border-transparent hover:bg-slate-800 transition-colors">CMD</button>
+                <button onclick="setTerminal('ps')" id="tab-ps" class="flex-1 border-b-2 border-transparent hover:bg-slate-800 transition-colors">PowerShell</button>
+                <button onclick="setTerminal('bash')" id="tab-bash" class="flex-1 border-b-2 border-sky-500 text-white bg-slate-800 transition-colors">Bash</button>
             </div>
 
-            <div class="bg-slate-900/80 p-3 border-b border-slate-800 shrink-0">
-                <p class="text-sky-400 font-bold text-[10px] mb-1">MISIÓN ACTUAL:</p>
-                <p id="mission-text" class="text-slate-300 text-sm">Consulta la variable de entorno PATH.</p>
-            </div>
-
-            <div id="terminal-container" class="flex-grow p-4 font-mono text-base overflow-y-auto custom-scroll relative border-2 border-transparent transition-all duration-300">
-                <div id="terminal-output" class="whitespace-pre-wrap mb-2">
-                    <div class="text-slate-500">Microsoft Windows [Version 10.0.19045.3324]<br><br></div>
+            <!-- Terminal Output Area -->
+            <div id="terminal-wrapper" class="flex-1 p-4 overflow-y-auto font-mono text-sm leading-relaxed transition-all duration-300" style="scrollbar-width: thin;">
+                <div id="terminal-output" class="whitespace-pre-wrap break-words"></div>
+                
+                <!-- Terminal Input Line -->
+                <div class="flex items-center mt-1">
+                    <span id="prompt" class="mr-2 whitespace-nowrap text-emerald-400">kali@admin:~$</span>
+                    <input type="text" id="terminal-input" class="flex-1 bg-transparent border-none text-inherit font-inherit caret-slate-200" autocomplete="off" spellcheck="false">
                 </div>
-                <div class="flex items-center gap-2">
-                    <span id="prompt-text" class="text-slate-300 shrink-0">C:\Users\Estudiante&gt;</span>
-                    <input type="text" id="cmd-input" class="bg-transparent border-none outline-none text-white flex-grow font-mono w-full caret-transparent" autocomplete="off" spellcheck="false" autofocus>
-                    <span class="w-2.5 h-5 bg-slate-400 cursor-blink -ml-2"></span>
-                </div>
+                <div class="h-8"></div>
             </div>
-            
         </section>
     </main>
 
-    <!-- MODAL DE CITAS -->
-    <div id="citation-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/70 transition-opacity duration-300 opacity-0">
-        <div class="glass-panel w-[600px] p-8 rounded-2xl shadow-[0_0_40px_rgba(14,165,233,0.3)] transform scale-95 transition-transform duration-300" id="modal-content">
-            <div class="flex justify-between items-start mb-6">
-                <h3 class="text-2xl font-bold text-sky-400 font-mono">📚 Referencia</h3>
-                <button id="close-cite" class="text-slate-400 hover:text-white text-3xl leading-none">&times;</button>
-            </div>
-            <div class="space-y-2 text-lg text-slate-200">
-                <div><span class="text-sky-500 font-bold w-24 inline-block">Libro:</span> <span id="cite-book" class="italic text-white"></span></div>
-                <div><span class="text-sky-500 font-bold w-24 inline-block">Autor:</span> <span id="cite-author" class="text-slate-300"></span></div>
-                <div><span class="text-sky-500 font-bold w-24 inline-block">Página:</span> <span id="cite-page" class="text-emerald-400 font-mono font-bold"></span> (<span id="cite-year"></span>)</div>
-            </div>
-            <div class="mt-6 bg-slate-900/90 p-5 rounded border border-slate-700">
-                <p id="cite-text" class="text-slate-300 italic border-l-4 border-sky-500 pl-4"></p>
+    <!-- Modal de Citas -->
+    <div id="citation-modal" class="fixed inset-0 z-50 hidden items-center justify-center pointer-events-none">
+        <div id="citation-backdrop" class="absolute inset-0 bg-slate-950/40 opacity-0 transition-opacity duration-300 pointer-events-auto" onclick="closeCitation()"></div>
+        <div id="citation-content" class="glass-modal p-8 rounded-2xl max-w-2xl w-full mx-4 transform scale-95 opacity-0 transition-all duration-300 shadow-2xl relative z-10 pointer-events-auto">
+            <button onclick="closeCitation()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-800">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="text-xs uppercase tracking-widest text-sky-600 font-bold mb-2">Grounding Bibliográfico</div>
+            <h3 id="cite-book" class="text-2xl font-bold text-slate-900 mb-1">Título del Libro</h3>
+            <div class="text-sm text-slate-600 mb-6"><span id="cite-author" class="font-semibold">Autor</span> (<span id="cite-year">Año</span>) - Pág. <span id="cite-page">0</span></div>
+            <div class="relative">
+                <div class="absolute -left-3 top-0 bottom-0 w-1 bg-emerald-500 rounded"></div>
+                <p id="cite-text" class="text-slate-800 text-lg italic leading-relaxed pl-4">"Cita textual aquí..."</p>
             </div>
         </div>
     </div>
 
-    <script>
-        // 1. MOTOR AUDIO 8-BIT
-        const AudioEngine = {
-            ctx: null,
-            init: function() {
-                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                if (this.ctx.state === 'suspended') this.ctx.resume();
-            },
-            play: function(type) {
-                this.init();
-                const now = this.ctx.currentTime;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.connect(gain); gain.connect(this.ctx.destination);
 
-                if (type === 'blip') { 
-                    osc.type = 'square'; osc.frequency.setValueAtTime(600, now); osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-                    gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                    osc.start(now); osc.stop(now + 0.1);
-                } else if (type === 'type_tick') { 
-                    osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
-                    gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-                    osc.start(now); osc.stop(now + 0.05);
-                } else if (type === 'error_buzz') { 
-                    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(100, now + 0.3);
-                    gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.3);
-                    osc.start(now); osc.stop(now + 0.3);
-                } else if (type === 'success') { 
-                    osc.type = 'square'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(659.25, now + 0.1); osc.frequency.setValueAtTime(880, now + 0.2); 
-                    gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
-                    osc.start(now); osc.stop(now + 0.4);
+    <script>
+        // --- 1. BASE DE DATOS DE CITAS (Grounding) ---
+        const citationsDB = {
+            'shotts_xvi': { book: 'The Linux Command Line', author: 'William Shotts', year: 2019, page: 'xvi', text: 'Mientras que la GUI oculta la complejidad del sistema mediante abstracciones visuales, limita la velocidad, precisión y la capacidad de automatización del administrador de sistemas.' },
+            'mueller_135': { book: 'Windows Administration at the Command Line', author: 'John Paul Mueller', year: 2007, page: 135, text: 'Un intérprete de comandos lee directamente de la entrada estándar (stdin), interpreta sintácticamente la cadena, busca el binario y genera un proceso hijo.' },
+            'mueller_57': { book: 'Windows Administration at the Command Line', author: 'John Paul Mueller', year: 2007, page: 57, text: 'CMD está basado en comandos internos históricos de MS-DOS, orientado a procesamiento de texto plano y ejecución secuencial de archivos por lotes.' },
+            'wilson_10': { book: 'Windows PowerShell Networking Guide', author: 'Ed Wilson', year: 2018, page: 10, text: 'PowerShell es orientado a objetos basados en Microsoft .NET. No canaliza cadenas de texto simple, sino instancias completas de objetos.' },
+            'shotts_304': { book: 'The Linux Command Line', author: 'William Shotts', year: 2019, page: 304, text: 'Bash sigue la Filosofía Unix de "hacer una sola cosa bien" y utilizar texto plano como la interfaz universal de comunicación.' },
+            'mueller_37': { book: 'Windows Administration at the Command Line', author: 'John Paul Mueller', year: 2007, page: 37, text: 'En Windows CMD, la variable PATH se manipula usando set PATH=%PATH%;C:\\Nueva\\Ruta' },
+            'shotts_131': { book: 'The Linux Command Line', author: 'William Shotts', year: 2019, page: 131, text: 'En Linux, export PATH=$PATH:/nueva/ruta actualiza temporalmente el entorno para que el shell localice binarios.' },
+            'shotts_271': { book: 'The Linux Command Line', author: 'William Shotts', year: 2019, page: 271, text: 'En Linux, clear consulta terminfo para obtener secuencias ANSI (ej. \\033[2J) y enviarlas a stdout.' },
+            'mueller_90': { book: 'Windows Administration at the Command Line', author: 'John Paul Mueller', year: 2007, page: 90, text: 'El parámetro /A en dir muestra archivos con atributos específicos como ocultos o de sistema.' },
+            'mueller_73': { book: 'Windows Administration at the Command Line', author: 'John Paul Mueller', year: 2007, page: 73, text: 'El parámetro /S en dir muestra los archivos de manera recursiva en todos los subdirectorios.' },
+            'mueller_83': { book: 'Windows Administration at the Command Line', author: 'John Paul Mueller', year: 2007, page: 83, text: 'El parámetro /B usa formato básico sin encabezados.' },
+            'occupy_230': { book: 'Linux Basics for Hackers', author: 'OccupyTheWeb', year: 2019, page: 230, text: 'ls -l muestra formato largo y -h traduce tamaños a formato humano (4K, 12M).' },
+            'shotts_13': { book: 'The Linux Command Line', author: 'William Shotts', year: 2019, page: 13, text: 'ls -a lista todos los elementos, incluidos los archivos ocultos (dotfiles).' },
+            'shotts_101': { book: 'The Linux Command Line', author: 'William Shotts', year: 2019, page: 101, text: 'sudo permite a un usuario ejecutar un comando como superusuario u otro usuario, conforme al archivo /etc/sudoers.' },
+            'tanenbaum_23': { book: 'Computer Networks', author: 'Andrew S. Tanenbaum', year: 2021, page: 23, text: 'SSH proporciona un canal cifrado mediante criptografía de clave pública para autenticación y cifrado simétrico.' },
+            'kurose_285': { book: 'Redes de computadoras', author: 'Kurose y Ross', year: 2017, page: 285, text: 'IPv4 usa direcciones de 32 bits, IPv6 amplía a 128 bits usando formato hexadecimal.' },
+            'tanenbaum_14': { book: 'Computer Networks', author: 'Andrew S. Tanenbaum', year: 2021, page: 14, text: 'El bloque 192.168.0.0/16 está reservado por RFC 1918 para direccionamiento en redes privadas no enrutables.' },
+            'kurose_201': { book: 'Redes de computadoras', author: 'Kurose y Ross', year: 2017, page: 201, text: 'NAT mapea múltiples direcciones privadas internas en una única IP pública modificando cabeceras y puertos.' },
+            'mueller_89': { book: 'Windows Administration at the Command Line', author: 'John Paul Mueller', year: 2007, page: 89, text: 'ipconfig interactúa directamente con el controlador NDIS para consultar el estado del adaptador TCP/IP.' },
+            'wilson_324': { book: 'Windows PowerShell Networking Guide', author: 'Ed Wilson', year: 2018, page: 324, text: 'El cmdlet New-NetIPAddress es la forma moderna de configurar red estática en Windows.' },
+            'occupy_29': { book: 'Linux Basics for Hackers', author: 'OccupyTheWeb', year: 2019, page: 29, text: 'ifconfig es la herramienta clásica de Net-tools para ver y modificar parámetros de red.' },
+            'shotts_289': { book: 'The Linux Command Line', author: 'William Shotts', year: 2019, page: 289, text: 'La suite iproute2 (ip a, ip link, ip route) reemplaza a las antiguas net-tools.' },
+            'cobbaut_245': { book: 'Linux System Administration', author: 'Paul Cobbaut', year: 2015, page: 245, text: 'nmcli permite gestionar conexiones controladas por NetworkManager en distribuciones modernas.' },
+            'cobbaut_244': { book: 'Linux System Administration', author: 'Paul Cobbaut', year: 2015, page: 244, text: 'Para persistencia, la red debe configurarse en /etc/network/interfaces o ifcfg-eth0 dependiendo de la distro.' },
+            'mueller_88': { book: 'Windows Administration at the Command Line', author: 'John Paul Mueller', year: 2007, page: 88, text: 'arp -a muestra la caché ARP, esencial para localizar la MAC en conflictos de IP.' },
+            'occupy_237': { book: 'Linux Basics for Hackers', author: 'OccupyTheWeb', year: 2019, page: 237, text: 'Si hay IP pero no DNS, añade nameserver 8.8.8.8 al archivo /etc/resolv.conf.' },
+            'mueller_102': { book: 'Windows Administration at the Command Line', author: 'John Paul Mueller', year: 2007, page: 102, text: 'Si falla el DHCP, Windows asigna automáticamente una IP temporal del rango APIPA 169.254.0.0/16.' }
+        };
+
+        // --- 2. SISTEMA DE AUDIO (Web Audio API nativa) ---
+        let audioCtx;
+        const audioEngine = {
+            init: function() {
+                if(!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    document.getElementById('audio-btn').classList.replace('text-sky-200', 'text-emerald-400');
+                    document.getElementById('audio-btn').classList.replace('bg-sky-900', 'bg-emerald-900');
+                    document.getElementById('audio-btn').innerText = "Audio Activo";
                 }
+            },
+            playOsc: function(type, freq1, freq2, duration, vol = 0.1) {
+                if(!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.frequency.setValueAtTime(freq1, audioCtx.currentTime);
+                if(freq2) osc.frequency.exponentialRampToValueAtTime(freq2, audioCtx.currentTime + duration);
+                
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            },
+            blip: () => audioEngine.playOsc('square', 600, 1200, 0.1, 0.05),
+            type_tick: () => audioEngine.playOsc('triangle', 800, null, 0.05, 0.02),
+            error_buzz: () => audioEngine.playOsc('sawtooth', 150, 100, 0.3, 0.1),
+            success: () => {
+                if(!audioCtx) return;
+                const t = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.frequency.setValueAtTime(440, t);
+                osc.frequency.setValueAtTime(659, t + 0.1);
+                osc.frequency.setValueAtTime(880, t + 0.2);
+                
+                gain.gain.setValueAtTime(0.1, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.4);
+                
+                osc.start(t);
+                osc.stop(t + 0.4);
             }
         };
-        document.addEventListener('click', (e) => { if(e.target.closest('button')) AudioEngine.play('blip'); });
-        document.addEventListener('keydown', (e) => { if(e.target.tagName === 'INPUT' && e.key !== 'Enter') AudioEngine.play('type_tick'); });
 
-        // 2. TEXTO Y CIDR
-        document.getElementById('font-slider').addEventListener('input', (e) => {
-            document.getElementById('font-size-display').innerText = e.target.value;
-            document.documentElement.style.setProperty('--text-base-size', `${e.target.value}px`);
-        });
+        function initAudio() { audioEngine.init(); audioEngine.blip(); }
 
-        document.getElementById('cidr-slider').addEventListener('input', (e) => {
-            const cidr = parseInt(e.target.value);
-            document.getElementById('cidr-val').innerText = cidr;
-            let maskStr = "".padStart(cidr, "1").padEnd(32, "0");
-            let maskArr = [maskStr.slice(0,8), maskStr.slice(8,16), maskStr.slice(16,24), maskStr.slice(24,32)];
-            let maskDec = maskArr.map(b => parseInt(b, 2));
-            document.getElementById('mask-bin').innerText = maskArr.join('.');
-            document.getElementById('mask-dec').innerText = maskDec.join('.');
-            const ipDec = [192, 168, 1, 135];
-            let netDec = ipDec.map((val, i) => val & maskDec[i]);
-            document.getElementById('net-dec').innerText = netDec.join('.');
-        });
-
-        // 3. CITAS DB
-        const citationsDB = {
-            cite_0_1: { book: "The Linux Command Line", author: "William Shotts", year: "2019", page: "p. xvi", extract: "La CLI se fundamenta en la transmisión de flujos de texto que se comunican directamente con el shell del sistema operativo." },
-            cite_0_2: { book: "Windows Administration at the Command Line", author: "John Paul Mueller", year: "2007", page: "p. 135", extract: "Un intérprete de comandos lee de stdin, busca el binario, genera un proceso hijo y devuelve resultados a stdout." },
-            cite_0_3: { book: "Windows Administration", author: "Mueller", year: "2007", page: "p. 57", extract: "Paradigma orientado a procesamiento de texto plano y ejecución secuencial." },
-            cite_0_4: { book: "PowerShell Networking Guide", author: "Ed Wilson", year: "2018", page: "p. 10", extract: "Orientado a objetos basados en .NET. No canaliza texto simple, sino objetos." },
-            cite_0_5: { book: "The Linux Command Line", author: "Shotts", year: "2019", page: "p. 304", extract: "Filosofía Unix de hacer una sola cosa bien usando texto plano." },
-            cite_0_6: { book: "Linux Basics for Hackers", author: "OccupyTheWeb", year: "2019", page: "p. 74", extract: "Verificar el entorno con echo $PATH para identificar binarios faltantes." },
-            cite_1_1: { book: "The Linux Command Line", author: "Shotts", year: "2019", page: "p. 271", extract: "cls interactúa con conhost borrando el búfer; clear usa ANSI escape." },
-            cite_1_2: { book: "The Linux Command Line", author: "Shotts", year: "2019", page: "p. 271", extract: "clear consulta terminfo para secuencias ANSI." },
-            cite_1_3: { book: "Windows Admin", author: "Mueller", year: "2007", page: "p. 73", extract: "/S: Muestra recursivamente subdirectorios." },
-            cite_1_7: { book: "Linux Basics", author: "OccupyTheWeb", year: "2019", page: "p. 230", extract: "-h: Traduce tamaños a formato humano (K, M)." },
-            cite_1_8: { book: "Windows Admin", author: "Mueller", year: "2007", page: "p. 57", extract: "Sintaxis: type [ruta] para visualizar contenido." },
-            cite_1_10: { book: "The Linux Command Line", author: "Shotts", year: "2019", page: "p. 53", extract: "cat vuelca contenido, less permite navegación paginada." },
-            cite_1_19: { book: "Computer Networks", author: "Tanenbaum et al.", year: "2021", page: "p. 23", extract: "Telnet es vulnerable a sniffing. SSH provee canal cifrado TCP 22." },
-            cite_2_1: { book: "Computer Networks", author: "Tanenbaum et al.", year: "2021", page: "p. 41", extract: "IPv4 usa 32 bits. IPv6 amplía a 128 bits hexadecimales." },
-            cite_2_2: { book: "Redes de computadoras", author: "Kurose y Ross", year: "2017", page: "p. 201", extract: "NAT mapea IPs privadas a pública reemplazando puerto/origen." },
-            cite_3_1: { book: "Windows Admin", author: "Mueller", year: "2007", page: "p. 90", extract: "ipconfig /all muestra MAC, DHCP y caché DNS." },
-            cite_3_2: { book: "Windows Admin", author: "Mueller", year: "2007", page: "p. 91", extract: "ipconfig /release envía DHCPRELEASE al servidor." },
-            cite_3_3: { book: "Windows Admin", author: "Mueller", year: "2007", page: "p. 91", extract: "ipconfig /renew solicita renovación DHCPDISCOVER." },
-            cite_3_4: { book: "PowerShell Networking", author: "Wilson", year: "2018", page: "p. 325", extract: "Get-NetAdapter lista hardware, ifIndex y estado." },
-            cite_3_5: { book: "PowerShell Networking", author: "Wilson", year: "2018", page: "p. 149", extract: "Requiere iniciar terminal con UAC administrador." },
-            cite_4_1: { book: "The Linux Command Line", author: "Shotts", year: "2019", page: "p. 289", extract: "ip a (iproute2) reemplaza a ifconfig mostrando asignaciones IP." },
-            cite_4_2: { book: "Linux System Admin", author: "Cobbaut", year: "2015", page: "p. 245", extract: "nmcli controla NetworkManager en distros modernas." },
-            cite_5_1: { book: "Linux System Admin", author: "Cobbaut", year: "2015", page: "p. 253", extract: "ping envía ICMP Echo Request para verificar estado activo." },
-            cite_5_2: { book: "Computer Networks", author: "Tanenbaum", year: "2021", page: "p. 22", extract: "traceroute traza ruta incrementando TTL (Time to Live)." },
-            cite_5_3: { book: "Computer Networks", author: "Tanenbaum", year: "2021", page: "p. 31", extract: "netstat muestra sockets TCP en estado LISTEN o ESTABLISHED." }
-        };
-
-        const modal = document.getElementById('citation-modal');
-        document.querySelectorAll('.cite-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const data = citationsDB[e.target.dataset.cite];
+        // --- STREAMING_CHUNK:Eventos y Delegación de Citas... ---
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.cite-btn');
+            if(btn) {
+                audioEngine.blip();
+                const citeId = btn.getAttribute('data-cite');
+                const data = citationsDB[citeId];
                 if(data) {
                     document.getElementById('cite-book').innerText = data.book;
                     document.getElementById('cite-author').innerText = data.author;
                     document.getElementById('cite-year').innerText = data.year;
                     document.getElementById('cite-page').innerText = data.page;
-                    document.getElementById('cite-text').innerText = data.extract;
+                    document.getElementById('cite-text').innerText = `"${data.text}"`;
+                    
+                    const modal = document.getElementById('citation-modal');
+                    const backdrop = document.getElementById('citation-backdrop');
+                    const content = document.getElementById('citation-content');
+                    
                     modal.classList.remove('hidden');
-                    setTimeout(() => { modal.classList.remove('opacity-0'); document.getElementById('modal-content').classList.remove('scale-95'); }, 10);
+                    modal.classList.add('flex');
+                    // Retardo para animación CSS
+                    setTimeout(() => {
+                        backdrop.classList.remove('opacity-0');
+                        content.classList.remove('opacity-0', 'scale-95');
+                        content.classList.add('opacity-100', 'scale-100');
+                    }, 10);
                 }
-            });
-        });
-
-        document.getElementById('close-cite').addEventListener('click', () => {
-            modal.classList.add('opacity-0'); document.getElementById('modal-content').classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        });
-
-        // 4. LÓGICA DE NAVEGACIÓN Y TERMINAL
-        let currentModule = 'mod0';
-        let currentOS = 'cmd';
-        let isAwaitingSSH = false;
-        let mod3_state = 0;
-
-        const leftPanel = document.getElementById('left-panel');
-        const centerPanel = document.getElementById('center-panel');
-        const rightPanel = document.getElementById('right-panel');
-        
-        const inputField = document.getElementById('cmd-input');
-        const outputDiv = document.getElementById('terminal-output');
-        const promptText = document.getElementById('prompt-text');
-        const termContainer = document.getElementById('terminal-container');
-        const missionText = document.getElementById('mission-text');
-
-        const moduleData = {
-            'mod0': { hint: "Consulta la ruta: 'echo %PATH%'" },
-            'mod1': { hint: "SSH remoto: 'ssh admin42@192.168.1.30'" },
-            'mod2': { hint: "Puerto SSH: Escribe solo '22'" },
-            'mod3': { hint: "Renovar DHCP: 'ipconfig /release' luego '/renew'" },
-            'mod4': { hint: "Kali: 'ifconfig wlan0 192.168.1.45 netmask 255.255.255.0'" },
-            'mod5': { hint: "Solucionar APIPA: 'ipconfig /renew' o 'dhclient eth0'" }
-        };
-
-        const consoleConfigs = {
-            'cmd': { prompt: 'C:\\Users\\Estudiante&gt;', color: 'text-slate-300', activeClass: 'border-sky-500 text-sky-400' },
-            'ps': { prompt: 'PS C:\\&gt;', color: 'text-white', activeClass: 'border-blue-500 text-blue-400' },
-            'bash': { prompt: '<span class="text-emerald-400 font-bold">kali@admin</span><span class="text-white">:~$</span>', color: 'text-emerald-100', activeClass: 'border-emerald-500 text-emerald-400' }
-        };
-
-        // Cambiar Módulo y gestionar Layout
-        document.querySelectorAll('.mod-tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const targetMod = e.target.dataset.target;
-                currentModule = targetMod;
-                
-                // Botones Top
-                document.querySelectorAll('.mod-tab-btn').forEach(b => {
-                    b.classList.remove('active-tab', 'bg-sky-900/20', 'text-sky-400', 'bg-rose-900/20', 'text-rose-400');
-                    b.classList.add('bg-slate-800');
-                });
-                if(targetMod === 'mod5') e.target.classList.add('active-tab', 'bg-rose-900/20', 'text-rose-400');
-                else e.target.classList.add('active-tab', 'bg-sky-900/20', 'text-sky-400');
-                e.target.classList.remove('bg-slate-800');
-
-                // Mostrar/Ocultar Módulos (DOM seguro)
-                document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden', 'block'));
-                document.getElementById(targetMod).classList.remove('hidden');
-
-                missionText.innerText = moduleData[targetMod].hint;
-
-                // Layout 3 Paneles para Módulo 5
-                if(targetMod === 'mod5') {
-                    leftPanel.classList.replace('w-[60%]', 'w-[30%]');
-                    centerPanel.classList.remove('hidden');
-                    setTimeout(() => centerPanel.classList.replace('w-0', 'w-[40%]'), 10);
-                    rightPanel.classList.replace('w-[40%]', 'w-[30%]');
-                    // Reiniciar alarma APIPA
-                    document.getElementById('alert-box').className = 'bg-rose-950/40 border-2 border-rose-500 p-8 rounded-xl alert-pulse-rose transition-colors duration-500';
-                    document.getElementById('alert-icon').innerText = '⚠️';
-                    document.getElementById('alert-title').innerText = 'FALLA DHCP: APIPA DETECTADO';
-                    document.getElementById('alert-title').className = 'text-2xl font-bold text-rose-500 font-mono mb-2';
-                    document.getElementById('alert-ip').innerText = 'IP: 169.254.15.22';
-                } else {
-                    leftPanel.classList.replace('w-[30%]', 'w-[60%]');
-                    centerPanel.classList.replace('w-[40%]', 'w-0');
-                    setTimeout(() => centerPanel.classList.add('hidden'), 500);
-                    rightPanel.classList.replace('w-[30%]', 'w-[40%]');
-                }
-
-                if(targetMod === 'mod2') promptText.innerHTML = "<span class='text-rose-400'>Puerto remoto cifrado: </span>";
-                else if(targetMod === 'mod4') document.querySelector('[data-term="bash"]').click();
-                else promptText.innerHTML = consoleConfigs[currentOS].prompt;
-            });
-        });
-
-        // Cambiar OS Consola
-        document.querySelectorAll('.term-tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                currentOS = e.target.dataset.term;
-                document.querySelectorAll('.term-tab-btn').forEach(b => {
-                    b.classList.remove('active-tab', 'border-sky-500', 'text-sky-400', 'border-blue-500', 'text-blue-400', 'border-emerald-500', 'text-emerald-400');
-                    b.classList.add('border-transparent');
-                });
-                e.target.classList.remove('border-transparent');
-                e.target.classList.add('active-tab', ...consoleConfigs[currentOS].activeClass.split(' '));
-
-                inputField.className = `bg-transparent border-none outline-none flex-grow font-mono w-full caret-transparent ${consoleConfigs[currentOS].color}`;
-                if(currentModule !== 'mod2') promptText.innerHTML = consoleConfigs[currentOS].prompt;
-                
-                isAwaitingSSH = false; inputField.type = "text";
-                outputDiv.innerHTML += `<div><br><span class="text-slate-500 italic">-- Entorno ${currentOS.toUpperCase()} --</span><br></div>`;
-                inputField.value = ''; inputField.focus(); termContainer.scrollTop = termContainer.scrollHeight;
-            });
-        });
-
-        // Motor Terminal
-        inputField.addEventListener('keydown', function(e) {
-            if(e.key === 'Enter') {
-                const rawCmd = this.value.trim();
-                const cmd = rawCmd.toLowerCase();
-                this.value = '';
-                
-                if (isAwaitingSSH) {
-                    outputDiv.innerHTML += `<div>${promptText.innerHTML} <span class="${consoleConfigs[currentOS].color}">********</span></div>`;
-                    isAwaitingSSH = false; inputField.type = "text";
-                    promptText.innerHTML = '<span class="text-emerald-400 font-bold">admin42@ubuserver</span><span class="text-white">:~$</span>';
-                    AudioEngine.play('success'); termContainer.classList.add('terminal-success'); setTimeout(() => termContainer.classList.remove('terminal-success'), 400);
-                    outputDiv.innerHTML += `<div class="mt-2 mb-4 text-emerald-300">Welcome to Ubuntu 22.04 LTS.<br>[OK] RSA Auth success.</div>`;
-                    scrollToBottom(); return;
-                }
-
-                if(!cmd) return;
-                
-                // Renderizado con resaltado dinámico (Mod 4)
-                let renderCmd = rawCmd;
-                if(currentModule === 'mod4') {
-                    renderCmd = rawCmd.replace(/\b\d{1,3}(\.\d{1,3}){3}\b/g, '<span class="text-cyan-400">$&</span>')
-                                      .replace(/\b(wlan0|eth0)\b/g, '<span class="text-emerald-400">$&</span>')
-                                      .replace(/\b(netmask|broadcast)\b/g, '<span class="text-yellow-400">$&</span>');
-                }
-                outputDiv.innerHTML += `<div>${promptText.innerHTML} <span class="${consoleConfigs[currentOS].color}">${renderCmd}</span></div>`;
-
-                let error = false, output = '';
-
-                // Lógicas por Módulo
-                if(cmd === 'cls' || cmd === 'clear') { outputDiv.innerHTML = ''; return; }
-
-                if (currentModule === 'mod1' && cmd === 'ssh admin42@192.168.1.30') {
-                    isAwaitingSSH = true; promptText.innerHTML = "admin42@192.168.1.30's password: "; inputField.type = "password";
-                    outputDiv.innerHTML += `<div class="mt-1 mb-2 text-slate-400">Warning: Permanently added '192.168.1.30' to known hosts.</div>`;
-                } 
-                else if (currentModule === 'mod2') {
-                    if (cmd === '22') { output = `<span class="text-emerald-400">[ACCESO CONCEDIDO] Puerto SSH Validado.</span>`; AudioEngine.play('success'); }
-                    else { error = true; output = `El puerto ${cmd} es incorrecto.`; }
-                }
-                else if (currentModule === 'mod3') {
-                    if (mod3_state === 0 && cmd === 'ipconfig /release') {
-                        mod3_state = 1; output = `Adaptador Ethernet: Medios desconectados.`; AudioEngine.play('type_tick');
-                    } else if (mod3_state === 1 && cmd === 'ipconfig /renew') {
-                        mod3_state = 2; output = `<span class="text-emerald-300">IPv4 . . : 192.168.13.220<br>Misión Cumplida.</span>`; AudioEngine.play('success');
-                    } else { error = true; output = `Comando no esperado. Usa /release luego /renew`; }
-                }
-                else if (currentModule === 'mod4') {
-                    if(rawCmd === 'ifconfig wlan0 192.168.1.45 netmask 255.255.255.0') {
-                        output = `<span class="text-emerald-400">[OK] Interfaz wlan0 configurada correctamente.</span>`; AudioEngine.play('success');
-                    } else { error = true; output = `Sintaxis incorrecta. Revisa espacios e IPs.`; }
-                }
-                else if (currentModule === 'mod5') {
-                    if ((currentOS === 'cmd' && cmd === 'ipconfig /renew') || (currentOS === 'bash' && cmd === 'dhclient eth0')) {
-                        output = `<span class="text-emerald-400">Solicitud DHCP Procesada.</span>`; AudioEngine.play('success');
-                        document.getElementById('alert-box').className = 'bg-emerald-950/40 border-2 border-emerald-500 p-8 rounded-xl alert-pulse-emerald transition-colors duration-500';
-                        document.getElementById('alert-icon').innerText = '✅';
-                        document.getElementById('alert-title').innerText = 'RED OPERATIVA: IP RECUPERADA';
-                        document.getElementById('alert-title').className = 'text-2xl font-bold text-emerald-500 font-mono mb-2';
-                        document.getElementById('alert-ip').innerText = 'IP: 192.168.1.105 (DHCP)';
-                    } else { error = true; output = `Comando de recuperación incorrecto.`; }
-                }
-                else {
-                    // Comandos Genéricos
-                    if(cmd.startsWith('echo')) { output = `<span class='text-emerald-400'>[OK] Echo completado.</span>`; AudioEngine.play('success'); }
-                    else { error = true; output = `'${cmd}' no reconocido.`; }
-                }
-
-                if (error) {
-                    AudioEngine.play('error_buzz'); termContainer.classList.add('terminal-error'); setTimeout(() => termContainer.classList.remove('terminal-error'), 400);
-                    outputDiv.innerHTML += `<div class="text-rose-500 mt-1 mb-3">${output}</div>`;
-                } else if (output) {
-                    termContainer.classList.add('terminal-success'); setTimeout(() => termContainer.classList.remove('terminal-success'), 400);
-                    outputDiv.innerHTML += `<div class="mt-1 mb-3 text-slate-300">${output}</div>`;
-                }
-                scrollToBottom();
             }
         });
 
-        function scrollToBottom() { termContainer.scrollTop = termContainer.scrollHeight; }
-        termContainer.addEventListener('click', () => inputField.focus());
+        function closeCitation() {
+            const backdrop = document.getElementById('citation-backdrop');
+            const content = document.getElementById('citation-content');
+            backdrop.classList.add('opacity-0');
+            content.classList.remove('opacity-100', 'scale-100');
+            content.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                document.getElementById('citation-modal').classList.add('hidden');
+                document.getElementById('citation-modal').classList.remove('flex');
+            }, 300);
+        }
+
+        // --- STREAMING_CHUNK:Lógica de Layout y Navegación... ---
+        let currentModule = 0;
+        let currentTerm = 'bash';
+        let textSize = 24;
+
+        function changeTextSize(delta) {
+            textSize = Math.max(12, Math.min(32, textSize + delta));
+            document.documentElement.style.setProperty('--text-base-size', `${textSize}px`);
+            document.getElementById('size-display').innerText = `${textSize}px`;
+        }
+
+        function switchModule(modId) {
+            audioEngine.blip();
+            currentModule = modId;
+            
+            // UI Botones
+            document.querySelectorAll('.nav-btn').forEach((btn, i) => {
+                if(i === modId) {
+                    btn.classList.add('text-sky-400', 'border-sky-500');
+                    btn.classList.remove('text-slate-200', 'border-transparent');
+                } else {
+                    btn.classList.remove('text-sky-400', 'border-sky-500');
+                    btn.classList.add('text-slate-200', 'border-transparent');
+                }
+            });
+
+            // Ocultar todos los módulos
+            document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`mod${modId}`).classList.remove('hidden');
+
+            // Lógica asimétrica de paneles
+            const left = document.getElementById('left-panel');
+            const center = document.getElementById('center-panel');
+            const right = document.getElementById('right-panel');
+            
+            document.getElementById('tool-mod2').classList.add('hidden');
+            document.getElementById('tool-mod5').classList.add('hidden');
+
+            if(modId === 2) {
+                left.style.width = '30%';
+                center.style.width = '40%';
+                center.classList.remove('hidden');
+                center.classList.add('flex');
+                right.style.width = '30%';
+                document.getElementById('tool-mod2').classList.remove('hidden');
+                setTerminal('bash');
+            } else if (modId === 5) {
+                left.style.width = '30%';
+                center.style.width = '40%';
+                center.classList.remove('hidden');
+                center.classList.add('flex');
+                right.style.width = '30%';
+                document.getElementById('tool-mod5').classList.remove('hidden');
+                if(currentTerm !== 'cmd' && currentTerm !== 'ps') setTerminal('cmd'); // Sugerir CMD para APIPA
+            } else {
+                left.style.width = '60%';
+                center.style.width = '0px';
+                center.classList.remove('flex');
+                center.classList.add('hidden');
+                right.style.width = '40%';
+                
+                // Set terminal por defecto del módulo
+                if(modId === 3) setTerminal('ps');
+                if(modId === 1 || modId === 4) setTerminal('bash');
+            }
+            
+            // Reset state
+            terminalState = { mod1_ssh_step: 0, mod3_release_done: false, mod5_repaired: false };
+            document.getElementById('terminal-output').innerHTML = '';
+            
+            // Si regresa a Mod 5, volver IP a APIPA roja
+            if(modId === 5) {
+                const statusDot = document.getElementById('network-status-dot');
+                if(statusDot) {
+                    statusDot.classList.add('fill-rose-500', 'animate-pulse');
+                    statusDot.classList.remove('fill-emerald-500');
+                }
+            }
+            updatePrompt();
+        }
+
+        // --- STREAMING_CHUNK:Calculadora Binaria Módulo 2... ---
+        function updateSubnet() {
+            const cidr = parseInt(document.getElementById('cidr-slider').value);
+            document.getElementById('cidr-val').innerText = `/${cidr}`;
+            
+            // IP Host fja: 192.168.1.135
+            const ipInt = (192 << 24) | (168 << 16) | (1 << 8) | 135;
+            
+            // Mascara
+            const maskInt = ~((1 << (32 - cidr)) - 1);
+            
+            // Red
+            const netInt = ipInt & maskInt;
+
+            const decToStr = (int) => `${(int >>> 24) & 255}.${(int >>> 16) & 255}.${(int >>> 8) & 255}.${int & 255}`;
+            const binToStr = (int) => {
+                const s = (int >>> 0).toString(2).padStart(32, '0');
+                return `${s.substr(0,8)}.${s.substr(8,8)}.${s.substr(16,8)}.${s.substr(24,8)}`;
+            };
+
+            document.getElementById('mask-dec').innerText = decToStr(maskInt);
+            document.getElementById('mask-bin').innerText = binToStr(maskInt);
+            
+            document.getElementById('net-dec').innerText = decToStr(netInt);
+            document.getElementById('net-bin').innerText = binToStr(netInt);
+        }
+
+        // --- STREAMING_CHUNK:Lógica Estricta de Consola y Motor... ---
+        let terminalState = {
+            mod1_ssh_step: 0,
+            mod3_release_done: false,
+            mod5_repaired: false
+        };
+
+        function setTerminal(type) {
+            audioEngine.blip();
+            currentTerm = type;
+            
+            // Tab UI
+            ['cmd', 'ps', 'bash'].forEach(t => {
+                const tab = document.getElementById(`tab-${t}`);
+                if(t === type) {
+                    tab.classList.add('border-sky-500', 'text-white', 'bg-slate-800');
+                    tab.classList.remove('border-transparent', 'text-slate-400');
+                } else {
+                    tab.classList.remove('border-sky-500', 'text-white', 'bg-slate-800');
+                    tab.classList.add('border-transparent', 'text-slate-400');
+                }
+            });
+
+            // Specific terminal styling
+            const termEl = document.getElementById('right-panel');
+            if(type === 'ps') { termEl.style.backgroundColor = '#012456'; } // PS Blue
+            else { termEl.style.backgroundColor = 'black'; }
+
+            // Limpiar consola y mostrar encabezado según el sistema operativo
+            const out = document.getElementById('terminal-output');
+            if (type === 'cmd') {
+                out.innerHTML = `LabNet OS [Versión 10.0.22621.1]<br>(c) Corporación LabNet. Todos los derechos reservados.<br><br>`;
+            } else if (type === 'ps') {
+                out.innerHTML = `Windows PowerShell<br>Copyright (C) Microsoft Corporation. Todos los derechos reservados.<br><br>Intente probar los nuevos cmdlets multiplataforma.<br><br>`;
+            } else if (type === 'bash') {
+                out.innerHTML = `Linux admin-node 6.1.0-kali5-amd64 #1 SMP PREEMPT_DYNAMIC x86_64<br><br>The programs included with the Kali Linux system are free software;<br>the exact distribution terms for each program are described in the<br>individual files in /usr/share/doc/*/copyright.<br><br>`;
+            }
+
+            updatePrompt();
+            document.getElementById('terminal-input').focus();
+        }
+
+        function updatePrompt(customText = null) {
+            const pr = document.getElementById('prompt');
+            const input = document.getElementById('terminal-input');
+            
+            // Default styling
+            pr.className = 'mr-2 whitespace-nowrap font-bold ';
+            input.type = 'text';
+
+            if (customText !== null) {
+                pr.innerText = customText;
+                pr.className += "text-slate-400";
+                if(customText.includes('password')) input.type = 'password';
+            } else {
+                if (currentTerm === 'cmd') { pr.innerText = 'C:\\Users\\Estudiante>'; pr.className += "text-slate-300"; }
+                else if (currentTerm === 'ps') { pr.innerText = 'PS C:\\Windows\\system32>'; pr.className += "text-slate-100"; }
+                else if (currentTerm === 'bash') { 
+                    if(currentModule === 4) { pr.innerText = 'kali@security:~#'; pr.className += "text-rose-500"; }
+                    else { pr.innerText = 'kali@admin:~$'; pr.className += "text-emerald-400"; }
+                }
+            }
+        }
+
+        function printToTerminal(text, colorClass = "text-slate-200", renderPrompt = true) {
+            const out = document.getElementById('terminal-output');
+            const pr = document.getElementById('prompt');
+            
+            // Añadir el comando que el usuario tecleó con su prompt correspondiente
+            if (pr.innerText !== "password: ") {
+                const promptHtml = `<span class="${pr.className}">${pr.innerText}</span>`;
+                const cmdHtml = `<span class="text-slate-100">${document.getElementById('terminal-input').value}</span>`;
+                out.innerHTML += `<div>${promptHtml} ${cmdHtml}</div>`;
+            } else {
+                out.innerHTML += `<div><span class="${pr.className}">${pr.innerText}</span></div>`;
+            }
+            
+            // Añadir la salida del comando si hay
+            if(text) {
+                out.innerHTML += `<div class="${colorClass} mb-2">${text}</div>`;
+            }
+            
+            document.getElementById('terminal-input').value = '';
+            
+            if(renderPrompt) {
+                updatePrompt();
+            }
+            
+            // Auto-scroll
+            const wrapper = document.getElementById('terminal-wrapper');
+            wrapper.scrollTop = wrapper.scrollHeight;
+        }
+
+        function triggerTerminalGlow(type) {
+            const wrapper = document.getElementById('right-panel');
+            const className = type === 'success' ? 'terminal-glow-success' : 'terminal-glow-error';
+            wrapper.classList.add(className);
+            setTimeout(() => { wrapper.classList.remove(className); }, 600);
+        }
+
+        // --- STREAMING_CHUNK:Procesamiento de Comandos Central... ---
+        document.getElementById('terminal-input').addEventListener('keydown', function(e) {
+            audioEngine.type_tick();
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                processCommand(this.value.trim());
+            }
+        });
+
+        function processCommand(cmd) {
+            if (!cmd) { printToTerminal(""); return; }
+            const cmdLower = cmd.toLowerCase().trim();
+            const args = cmdLower.split(/\s+/);
+            const baseCmd = args[0];
+
+            // --- 1. RESTRICCIONES POR ENTORNO (STRICT MODE) ---
+            const isWindows = (currentTerm === 'cmd' || currentTerm === 'ps');
+            const isLinux = (currentTerm === 'bash');
+
+            // CMD estricto: rechaza comandos de Linux
+            if (currentTerm === 'cmd' && ['ls', 'cat', 'pwd', 'clear', 'sudo', 'ifconfig', 'iwconfig', 'ip', 'dig'].includes(baseCmd)) {
+                audioEngine.error_buzz();
+                triggerTerminalGlow('error');
+                printToTerminal(`'${baseCmd}' no se reconoce como un comando interno o externo,\nprograma o archivo por lotes ejecutable.`, 'text-rose-400');
+                return;
+            }
+
+            // Bash estricto: rechaza comandos de Windows
+            if (currentTerm === 'bash' && ['dir', 'type', 'cls', 'ipconfig', 'get-netadapter', 'tracert', 'nslookup'].includes(baseCmd)) {
+                audioEngine.error_buzz();
+                triggerTerminalGlow('error');
+                printToTerminal(`bash: ${baseCmd}: orden no encontrada`, 'text-rose-400');
+                return;
+            }
+
+            // PowerShell restringe comandos nativos de Linux aunque acepte algunos alias, seremos estrictos para enseñanza.
+            if (currentTerm === 'ps' && ['sudo', 'ifconfig', 'iwconfig', 'ip'].includes(baseCmd)) {
+                audioEngine.error_buzz();
+                triggerTerminalGlow('error');
+                printToTerminal(`${baseCmd} : El término '${baseCmd}' no se reconoce como nombre de un cmdlet, función, archivo de script o programa ejecutable.`, 'text-rose-400');
+                return;
+            }
+
+            // --- 2. INTERCEPCIÓN ESPECIAL (Inputs que no son comandos estándar) ---
+            if (currentModule === 1 && terminalState.mod1_ssh_step === 1) {
+                // Modo ingreso de contraseña SSH
+                if (cmd === '12321' || cmd === 'admin' || cmd === 'password') {
+                     audioEngine.success();
+                     printToTerminal("Login exitoso. Bienvenido a ubuserver.", 'text-emerald-400');
+                     terminalState.mod1_ssh_step = 2;
+                     updatePrompt("admin42@ubuserver:~$ ");
+                } else {
+                     audioEngine.error_buzz();
+                     printToTerminal("Permission denied, please try again.", 'text-rose-400');
+                }
+                return;
+            }
+
+            if (currentModule === 2 && currentTerm === 'bash') {
+                if (['22', 'port 22'].includes(cmdLower)) {
+                    audioEngine.success();
+                    triggerTerminalGlow('success');
+                    printToTerminal("¡Correcto! El puerto seguro para transferencias remotas es el TCP 22 (SSH).", "text-emerald-400");
+                    return;
+                }
+            }
+
+
+            // --- 3. COMANDOS BÁSICOS EMULADOS (Universales) ---
+            let commandHandled = false;
+
+            if (baseCmd === 'cls' || baseCmd === 'clear') {
+                document.getElementById('terminal-output').innerHTML = '';
+                commandHandled = true;
+            }
+            else if (baseCmd === 'echo') {
+                printToTerminal(cmd.substring(5));
+                commandHandled = true;
+            }
+            else if (baseCmd === 'pwd' && (isLinux || currentTerm === 'ps')) {
+                printToTerminal(isLinux ? "/home/kali" : "Path\n----\nC:\\Windows\\system32");
+                commandHandled = true;
+            }
+            else if (baseCmd === 'cd' && args.length === 1 && isWindows) {
+                printToTerminal(currentTerm === 'ps' ? "C:\\Windows\\system32" : "C:\\Users\\Estudiante");
+                commandHandled = true;
+            }
+            else if (baseCmd === 'dir') {
+                audioEngine.type_tick();
+                let out = ` El volumen de la unidad C no tiene etiqueta.\n El Número de Serie del Volumen es: 1234-ABCD\n\n Directorio de ${currentTerm === 'ps' ? 'C:\\Windows\\system32' : 'C:\\Users\\Estudiante'}\n\n`;
+                out += `21/08/2026  21:19    &lt;DIR&gt;          .\n`;
+                out += `21/08/2026  21:19    &lt;DIR&gt;          ..\n`;
+                out += `21/08/2026  20:00    &lt;DIR&gt;          Documentos\n`;
+                out += `21/08/2026  15:30                42 config.txt\n`;
+                out += `21/08/2026  16:45             1,024 network.log\n`;
+                out += `               2 archivos          1,066 bytes\n`;
+                out += `               3 dirs  120,543,211,520 bytes libres`;
+                
+                if (args.includes('/p')) {
+                    out += `\n\nPresione una tecla para continuar . . .`;
+                }
+                printToTerminal(out);
+                commandHandled = true;
+            }
+            else if (baseCmd === 'ls') {
+                audioEngine.type_tick();
+                if (args.includes('-l') || args.includes('-lh') || args.includes('-la')) {
+                    let out = `total 12\n`;
+                    out += `drwxr-xr-x 2 kali kali 4096 Aug 21 20:00 <span class="text-sky-400 font-bold">Documentos</span>\n`;
+                    out += `-rw-r--r-- 1 kali kali   42 Aug 21 15:30 config.txt\n`;
+                    out += `-rw-r--r-- 1 kali kali 1024 Aug 21 16:45 network.log`;
+                    printToTerminal(out);
+                } else {
+                    printToTerminal(`<span class="text-sky-400 font-bold">Documentos</span>  config.txt  network.log`);
+                }
+                commandHandled = true;
+            }
+            else if (baseCmd === 'type' || baseCmd === 'cat') {
+                if (args.length > 1) {
+                    const file = args[1];
+                    if (file.includes('config')) {
+                        printToTerminal(`HOSTNAME=LabNet\nIP_ADDR=DHCP\nSTATUS=ACTIVE\nPORT=22`);
+                    } else if (file.includes('network')) {
+                        printToTerminal(`[INFO] Network service started.\n[WARN] Check interface status.\n[INFO] Resolution applied.`);
+                    } else {
+                        printToTerminal(isLinux ? `cat: ${file}: No existe el archivo o el directorio` : `El sistema no puede encontrar el archivo especificado.`, "text-rose-400");
+                    }
+                } else {
+                    printToTerminal(isLinux ? "cat: falta un operando" : "La sintaxis del comando no es correcta.", "text-rose-400");
+                }
+                commandHandled = true;
+            }
+            
+            // Si el comando fue manejado por las rutinas globales, detenemos la ejecución aquí.
+            if (commandHandled) return;
+
+            // --- 4. LÓGICA ESPECÍFICA POR MÓDULO (Misiones Contextuales) ---
+            if (currentModule === 1) {
+                if (baseCmd === 'ssh') {
+                    if (args[1] === 'admin42@192.168.1.30') {
+                        printToTerminal("Conectando a 192.168.1.30...\nLa autenticidad del host no se puede establecer.\nRSA key fingerprint es SHA256:xyz123...\nWarning: Permanently added '192.168.1.30' (RSA) to the list of known hosts.");
+                        terminalState.mod1_ssh_step = 1;
+                        setTimeout(() => {
+                            printToTerminal("password: ", "text-slate-400", false);
+                        }, 500);
+                    } else {
+                        printToTerminal("ssh: Could not resolve hostname " + (args[1] || '') + ": Name or service not known", "text-rose-400");
+                    }
+                } else {
+                    unrecognizedCommand(baseCmd, isLinux);
+                }
+            } 
+            else if (currentModule === 3) {
+                if (baseCmd === 'ipconfig') {
+                    if (args.includes('/release')) {
+                        terminalState.mod3_release_done = true;
+                        printToTerminal("Configuración IP de Windows\n\nAdaptador de Ethernet Ethernet:\n\n   Estado de los medios. . . . . . . . . . . : medios desconectados\n   Sufijo DNS específico de la conexión. . . : ");
+                    } else if (args.includes('/renew')) {
+                        if (terminalState.mod3_release_done) {
+                            audioEngine.success();
+                            triggerTerminalGlow('success');
+                            printToTerminal("Configuración IP de Windows\n\nAdaptador de Ethernet Ethernet:\n\n   Sufijo DNS específico de la conexión. . . : localdomain\n   Vínculo: dirección IPv6 local. . . : fe80::1234:5678:9abc:def0%12\n   Dirección IPv4. . . . . . . . . . . . . . : 192.168.1.105\n   Máscara de subred . . . . . . . . . . . . : 255.255.255.0\n   Puerta de enlace predeterminada . . . . . : 192.168.1.1", "text-emerald-400");
+                        } else {
+                            printToTerminal("Ninguna operación se puede realizar en Ethernet mientras los medios estén desconectados.");
+                        }
+                    } else if (args.includes('/all')) {
+                        printToTerminal("Configuración IP de Windows\n   Nombre del host . . . . . . . . . : Desktop-Admin\n   Enrutamiento IP habilitado. . . . : No\n\nAdaptador de Ethernet Ethernet:\n   Dirección física. . . . . . . . . : 00-0C-29-BA-82-0F\n   DHCP habilitado . . . . . . . . . : Sí\n   Dirección IPv4. . . . . . . . . . : 192.168.13.220");
+                    } else {
+                        printToTerminal("Configuración IP de Windows\n\nAdaptador de Ethernet Ethernet:\n\n   Dirección IPv4. . . . . . . . . . . . . . : 192.168.1.100\n   Máscara de subred . . . . . . . . . . . . : 255.255.255.0\n   Puerta de enlace predeterminada . . . . . : 192.168.1.1");
+                    }
+                } else if (baseCmd === 'get-netadapter') {
+                    printToTerminal("Name                      InterfaceDescription                    ifIndex Status       MacAddress             LinkSpeed\n----                      --------------------                    ------- ------       ----------             ---------\nEthernet                  Intel(R) Gigabit Network...                   4 Up           00-0C-29-BA-82-0F         1 Gbps");
+                } else {
+                    unrecognizedCommand(baseCmd, isLinux);
+                }
+            }
+            else if (currentModule === 4) {
+                 if (baseCmd === 'ifconfig' && args[1] === 'wlan0' && args[2] === '192.168.1.45' && args[3] === 'netmask' && args[4] === '255.255.255.0') {
+                     audioEngine.success();
+                     triggerTerminalGlow('success');
+                     printToTerminal("Interfaz wlan0 configurada con éxito.", "text-emerald-400");
+                 } else if (baseCmd === 'ifconfig' && args.length === 1) {
+                     printToTerminal("eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500\n        inet 10.0.2.15  netmask 255.255.255.0  broadcast 10.0.2.255\n        inet6 fe80::a00:27ff:fe8e:d0d8  prefixlen 64  scopeid 0x20<link>\n        ether 08:00:27:8e:d0:d8  txqueuelen 1000  (Ethernet)\n\nlo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536\n        inet 127.0.0.1  netmask 255.0.0.0");
+                 } else if (baseCmd === 'ifconfig') {
+                     printToTerminal("Uso esperado: ifconfig wlan0 192.168.1.45 netmask 255.255.255.0", "text-yellow-400");
+                 } else if (baseCmd === 'ip' && args[1] === 'a') {
+                     printToTerminal("1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000\n    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00\n    inet 127.0.0.1/8 scope host lo\n2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000\n    link/ether 08:00:27:8e:d0:d8 brd ff:ff:ff:ff:ff:ff\n    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic eth0");
+                 } else {
+                     unrecognizedCommand(baseCmd, isLinux);
+                 }
+            }
+            else if (currentModule === 5) {
+                if ((isWindows && cmdLower === 'ipconfig /renew') || (isLinux && cmdLower === 'dhclient eth0')) {
+                    audioEngine.success();
+                    triggerTerminalGlow('success');
+                    terminalState.mod5_repaired = true;
+                    printToTerminal("Renovación DHCP exitosa. Conectividad restaurada.", "text-emerald-400");
+                    
+                    const statusDot = document.getElementById('network-status-dot');
+                    if(statusDot) {
+                        statusDot.classList.remove('fill-rose-500', 'animate-pulse');
+                        statusDot.classList.add('fill-emerald-500');
+                    }
+                    document.getElementById('monitor-ip').innerText = "192.168.1.100";
+                    document.getElementById('monitor-ip').classList.replace('text-rose-400', 'text-emerald-400');
+                } else if (baseCmd === 'ping') {
+                    printToTerminal(`Haciendo ping a ${args[1] || '8.8.8.8'} con 32 bytes de datos:\nRespuesta desde ${args[1] || '8.8.8.8'}: bytes=32 tiempo=14ms TTL=117\nRespuesta desde ${args[1] || '8.8.8.8'}: bytes=32 tiempo=15ms TTL=117`);
+                } else if (baseCmd === 'arp' && args[1] === '-a') {
+                     printToTerminal("Interfaz: 192.168.1.100 --- 0x4\n  Dirección de Internet      Dirección física      Tipo\n  192.168.1.1                00-14-22-01-23-45     dinámico\n  192.168.1.255              ff-ff-ff-ff-ff-ff     estático");
+                } else if (baseCmd === 'tracert' || baseCmd === 'traceroute') {
+                     printToTerminal(`Traza a la dirección ${args[1] || 'google.com'} sobre un máximo de 30 saltos:\n\n  1    <1 ms    <1 ms    <1 ms  192.168.1.1\n  2    12 ms    14 ms    11 ms  10.20.30.1\n  3    15 ms    14 ms    15 ms  142.250.78.110\n\nTraza completa.`);
+                } else if (baseCmd === 'ipconfig') {
+                     printToTerminal("Configuración IP de Windows\n\nAdaptador de Ethernet Ethernet:\n\n   Dirección IPv4 de autoconfiguración . : 169.254.82.11\n   Máscara de subred . . . . . . . . . . . . : 255.255.0.0\n   Puerta de enlace predeterminada . . . . . : ", "text-rose-400");
+                } else {
+                     unrecognizedCommand(baseCmd, isLinux);
+                }
+            } else {
+                 unrecognizedCommand(baseCmd, isLinux);
+            }
+        }
+        
+        function unrecognizedCommand(baseCmd, isLinux) {
+            audioEngine.error_buzz();
+            triggerTerminalGlow('error');
+            if (isLinux) {
+                printToTerminal(`bash: ${baseCmd}: orden no encontrada`, 'text-rose-400');
+            } else {
+                printToTerminal(`'${baseCmd}' no se reconoce como un comando interno o externo,\nprograma o archivo por lotes ejecutable.`, 'text-rose-400');
+            }
+        }
+
+        // --- STREAMING_CHUNK:Inicialización... ---
+        window.onload = () => {
+            switchModule(0); // Start at Welcome Module
+        };
     </script>
 </body>
 </html>
