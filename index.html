@@ -1,1238 +1,205 @@
 <!DOCTYPE html>
-<html lang="es" class="h-full bg-slate-50">
+<html lang="es" class="bg-slate-900 text-slate-200">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manual Interactivo: Diagnóstico Avanzado de Redes (Windows vs Linux)</title>
-    <!-- Tailwind CSS CDN -->
+    <title>CLI Lab - Redes</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            800: '#075985',
-                            900: '#0c4a6e',
-                        },
-                        terminal: {
-                            bg: '#0f172a',
-                            text: '#38bdf8',
-                            prompt: '#4ade80',
-                            warn: '#fbbf24',
-                            error: '#f87171'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 650px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 320px;
-            max-height: 380px;
+        /* Efecto de iluminación de contorno al hacer clic */
+        .btn-glow {
+            transition: all 0.1s ease-in-out;
+            box-shadow: 0 0 0px transparent;
         }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 350px;
-            }
+        .btn-glow:active {
+            box-shadow: 0 0 15px #0ea5e9, 0 0 30px #0ea5e9, inset 0 0 10px #0ea5e9;
+            border-color: #38bdf8;
+            transform: scale(0.98);
         }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        .btn-glow-danger:active {
+            box-shadow: 0 0 15px #ef4444, 0 0 30px #ef4444, inset 0 0 10px #ef4444;
+            transform: scale(0.98);
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #1e293b;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
+        
+        .crt-scanline {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
         }
     </style>
 </head>
-<body class="h-full flex flex-col font-sans text-slate-800 bg-slate-50 antialiased selection:bg-brand-500 selection:text-white">
+<body class="font-sans antialiased min-h-screen flex flex-col relative">
+    
+    <!-- Filtro CRT retro -->
+    <div class="fixed inset-0 crt-scanline z-50"></div>
 
-<!-- Chosen Palette: Slate & Cyber Amber (Light slate background #f8fafc, deep slate navy #0f172a, vibrant sky blue #0ea5e9, warm warning amber #f59e0b, dark terminal contrast #0f172a) -->
-
-<!-- Application Structure Plan:
-     1. Encabezado y Navegación Principal: Barra superior persistente con selector de sistema operativo (Windows CMD vs Linux Bash), métricas rápidas de diagnóstico y pestañas de módulos.
-     2. Módulo 1: Análisis de Puertos y Conexiones (Netstat -ano / netstat -ntpl / ss -ntpl):
-        - Introducción teórica y de arquitectura.
-        - Terminal interactiva para simulación de comandos y desglose de banderas (-a, -n, -o, -t, -p, -l).
-        - Tabla dinámica de sockets filtrable por estado (LISTEN, ESTABLISHED) con "Inspector de PID" para asociar procesos e hilos.
-     3. Módulo 2: Monitoreo de Estadísticas Globales e Interfaces (Netstat -e -s / netstat -s):
-        - Introducción sobre capa física (Ethernet) vs capa de transporte (TCP/UDP).
-        - Simulación de escenarios de red (Tráfico Normal, Falla de Cableado/Dúplex, Congestión Severa, Escaneo de Puertos).
-        - Visualizaciones con Chart.js (Grafico de Barras de descartes/errores y Dona de rendimiento de segmentos TCP).
-        - Panel de deducción diagnóstica interactivo según el escenario activo.
-     4. Módulo 3: Diagnóstico DNS Avanzado (Nslookup Modo Interactivo):
-        - Introducción sobre la jerarquía del DNS y tipos de registro (A, MX, CNAME, NS).
-        - Simulador de consola interactiva `nslookup` (`set type=mx`, `server 8.8.8.8`, `set type=any`).
-        - Flujo visual paso a paso de resolución jerárquica DNS (Cliente -> Resolvedor -> Raíz -> TLD -> Autoritativo).
-     5. Centro de Casos Prácticos y Evaluación:
-        - Escenarios reales de resolución de problemas con retroalimentación inmediata basada en las fuentes de Kurose & Ross.
-     6. Glosario y Acrónimos:
-        - Búsqueda interactiva de términos clave y referencias bibliográficas directas.
-     Esta estructura modular fue elegida porque permite al estudiante no solo memorizar sintaxis, sino asociar comandos con respuestas numéricas, interpretar estados de conexión y simular fallas reales en tiempo de ejecución.
--->
-
-<!-- Visualization & Content Choices:
-     - Tabla de Sockets -> Mostrar conexiones activas -> Filtros interactivos + Modal Inspector de PID -> HTML/CSS + Vanilla JS logic -> Permite hacer clic en cualquier PID para rastrear el proceso.
-     - Gráfico de Errores Ethernet -> Comparar Bytes/Paquetes vs Descartes/Errores -> Chart.js Bar Chart en contenedor controlado -> Facilita detectar fallas de hardware/cableado.
-     - Gráfico de Desempeño TCP -> Analizar aperturas activas/pasivas y segmentos retransmitidos -> Chart.js Doughnut Chart -> Permite identificar problemas de pérdida de paquetes o congestión en la ruta.
-     - Diagrama de Flujo DNS -> Explicar recorrido jerárquico -> Componente de pasos interactivos en HTML/CSS estructurado con animación JS -> Evita el uso de SVG/Mermaid manteniendo interactividad fluida.
-     - Simulador de Consola CLI -> Practicar ejecución de comandos en Windows/Linux -> Terminal HTML con feedback de comandos en tiempo real -> Facilita la memorización táctil de parámetros.
--->
-
-<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
-<!-- Header Principal -->
-<header class="bg-slate-900 text-white sticky top-0 z-50 border-b border-slate-800 shadow-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-            <!-- Logos & Title -->
-            <div class="flex items-center space-x-3">
-                <span class="text-2xl p-2 bg-brand-600 rounded-lg text-white font-mono font-bold shadow-inner">💻</span>
-                <div>
-                    <h1 class="text-lg font-bold tracking-tight text-white leading-none">LabNet CLI</h1>
-                    <p class="text-xs text-brand-500 font-medium mt-0.5">Diagnóstico Avanzado de Redes (Windows vs Linux)</p>
-                </div>
-            </div>
-
-            <!-- OS Quick Switcher -->
-            <div class="hidden md:flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700 text-xs">
-                <span class="text-slate-400 px-2 font-medium">Entorno activo:</span>
-                <button id="os-win-btn" onclick="setOS('win')" class="px-3 py-1.5 rounded-lg font-semibold transition-all bg-brand-600 text-white shadow">
-                    🪟 Windows CMD
-                </button>
-                <button id="os-lin-btn" onclick="setOS('lin')" class="px-3 py-1.5 rounded-lg font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-700">
-                    🐧 Linux Bash
-                </button>
-            </div>
-
-            <!-- Reference Badge -->
-            <div class="hidden lg:flex items-center text-xs text-slate-400 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700/50">
-                <span>📖 Ref: Kurose & Ross (5ª Ed.)</span>
+    <header class="bg-slate-950 border-b border-slate-800 p-4 sticky top-0 z-40">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold text-sky-400 font-mono tracking-wider">NET_ADMIN_TERMINAL_V1.0</h1>
+            <div class="space-x-2">
+                <button onclick="playRetroSound('blip'); switchModule('intro')" class="btn-glow bg-slate-800 border border-slate-600 text-xs px-4 py-2 rounded font-mono text-sky-300">INTRO</button>
+                <button onclick="playRetroSound('coin'); switchModule('mod1')" class="btn-glow bg-slate-800 border border-slate-600 text-xs px-4 py-2 rounded font-mono text-sky-300">MÓDULO 1</button>
+                <button onclick="playRetroSound('error');" class="btn-glow-danger bg-slate-800 border border-slate-600 text-xs px-4 py-2 rounded font-mono text-red-400">TEST ERROR</button>
             </div>
         </div>
-    </div>
+    </header>
 
-    <!-- Navigation Bar Tabs -->
-    <nav class="bg-slate-800 border-t border-slate-700/60 text-xs sm:text-sm font-medium">
-        <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 flex space-x-1 sm:space-x-4 overflow-x-auto custom-scrollbar">
-            <button onclick="switchTab('tab-ports')" id="nav-tab-ports" class="tab-btn py-3 px-3 border-b-2 border-brand-500 text-brand-500 font-bold flex items-center space-x-2 whitespace-nowrap">
-                <span>🔌 Puertos & Sockets</span>
-            </button>
-            <button onclick="switchTab('tab-stats')" id="nav-tab-stats" class="tab-btn py-3 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap">
-                <span>📊 Estadísticas & Protocolos</span>
-            </button>
-            <button onclick="switchTab('tab-dns')" id="nav-tab-dns" class="tab-btn py-3 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap">
-                <span>🌐 Resolución DNS (Nslookup)</span>
-            </button>
-            <button onclick="switchTab('tab-cases')" id="nav-tab-cases" class="tab-btn py-3 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap">
-                <span>🧩 Casos de Diagnóstico</span>
-            </button>
-            <button onclick="switchTab('tab-glossary')" id="nav-tab-glossary" class="tab-btn py-3 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 whitespace-nowrap">
-                <span>📚 Glosario & Acrónimos</span>
-            </button>
-        </div>
-    </nav>
-</header>
-
-<!-- Main Container -->
-<main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-
-    <!-- SECCIÓN 1: PUERTOS DE ESCUCHA Y CONEXIONES (NETSTAT) -->
-    <section id="tab-ports" class="tab-content space-y-6">
-        <!-- Intro Paragraph required by prompt -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm leading-relaxed">
-            <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
-                <span class="p-1.5 bg-brand-100 text-brand-800 rounded-lg text-lg">🔌</span>
-                <span>Análisis de Puertos de Escucha y Conexiones Activas con Netstat / SS</span>
-            </h2>
-            <p class="mt-2 text-slate-600 text-sm">
-                Esta sección permite explorar cómo los sistemas operativos Windows y Linux identifican y supervisan sus sockets lógicos. El estudiante aprenderá a diferenciar entre los puertos en estado de espera activa (<span class="font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">LISTEN</span>) y las sesiones de transporte bidireccional establecidas (<span class="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">ESTABLISHED</span>). La interacción mediante el simulador de comandos facilita mapear direcciones IP y números de puertos locales con sus respectivos Identificadores de Proceso (<span class="font-semibold text-slate-900">PID</span>), un paso fundamental para detectar servicios anómalos o intrusiones de red.
-            </p>
-        </div>
-
-        <!-- CLI Console & Options Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- Left Panel: Interactive Terminal -->
-            <div class="lg:col-span-7 bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden flex flex-col">
-                <!-- Terminal Bar Header -->
-                <div class="bg-slate-800/90 px-4 py-3 flex items-center justify-between border-b border-slate-700">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-3 h-3 rounded-full bg-rose-500"></div>
-                        <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                        <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-                        <span id="term-title" class="ml-2 font-mono text-xs text-slate-400">CMD - Windows Administrator Shell</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xs font-mono text-slate-400">Modo CLI:</span>
-                        <select id="os-selector-dropdown" onchange="setOS(this.value)" class="bg-slate-900 text-slate-200 text-xs font-mono px-2 py-1 rounded border border-slate-700 focus:outline-none focus:border-brand-500">
-                            <option value="win">Windows (CMD / PowerShell)</option>
-                            <option value="lin">Linux (Bash CLI / SS)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Command Presets Bar -->
-                <div class="bg-slate-800/40 px-4 py-2 border-b border-slate-800 flex items-center space-x-2 overflow-x-auto custom-scrollbar">
-                    <span class="text-xs font-mono text-slate-400 shrink-0">Comandos rápido:</span>
-                    <button onclick="runCommand('netstat -ano')" class="cmd-preset-btn text-xs font-mono bg-slate-800 hover:bg-slate-700 text-brand-400 px-2.5 py-1 rounded border border-slate-700 transition">
-                        netstat -ano
-                    </button>
-                    <button onclick="runCommand('netstat -v -b')" class="cmd-preset-btn text-xs font-mono bg-slate-800 hover:bg-slate-700 text-brand-400 px-2.5 py-1 rounded border border-slate-700 transition">
-                        netstat -v -b
-                    </button>
-                    <button onclick="runCommand('netstat -ntpl')" class="cmd-preset-btn text-xs font-mono bg-slate-800 hover:bg-slate-700 text-brand-400 px-2.5 py-1 rounded border border-slate-700 transition">
-                        netstat -ntpl
-                    </button>
-                    <button onclick="runCommand('ss -ntpl')" class="cmd-preset-btn text-xs font-mono bg-slate-800 hover:bg-slate-700 text-brand-400 px-2.5 py-1 rounded border border-slate-700 transition">
-                        ss -ntpl
-                    </button>
-                </div>
-
-                <!-- Terminal Body Output -->
-                <div id="terminal-body" class="p-4 font-mono text-xs sm:text-sm text-slate-200 min-h-[280px] max-h-[360px] overflow-y-auto custom-scrollbar space-y-2">
-                    <!-- Dynamic Output rendered via JS -->
-                </div>
-
-                <!-- Interactive Command Input -->
-                <div class="p-3 bg-slate-950 border-t border-slate-800 flex items-center space-x-2">
-                    <span id="term-prompt" class="font-mono text-emerald-400 font-bold text-sm">C:\Windows\system32&gt;</span>
-                    <input type="text" id="cli-input" onkeydown="handleCliKeyDown(event)" placeholder="Escribe un comando (ej. netstat -ano)..." class="flex-grow bg-transparent font-mono text-xs sm:text-sm text-white focus:outline-none placeholder-slate-600">
-                    <button onclick="executeInputCmd()" class="bg-brand-600 hover:bg-brand-500 text-white font-mono text-xs px-3 py-1.5 rounded transition">
-                        Ejecutar
-                    </button>
-                </div>
-            </div>
-
-            <!-- Right Panel: Command Flags Breakdown & Diagnostic Explanation -->
-            <div class="lg:col-span-5 space-y-4">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <h3 class="font-bold text-slate-900 text-base flex items-center justify-between">
-                        <span>🔍 Desglose de Parámetros y Banderas</span>
-                        <span id="active-flag-os" class="text-xs px-2 py-0.5 bg-slate-100 text-slate-700 font-mono rounded">Windows</span>
-                    </h3>
-
-                    <div id="flag-breakdown-list" class="space-y-2 text-xs">
-                        <!-- Rendered by JS based on current OS/Command -->
-                    </div>
-
-                    <div class="pt-3 border-t border-slate-100 text-xs text-slate-600 leading-relaxed space-y-2">
-                        <p class="font-semibold text-slate-800">💡 Interpretación de Resultados:</p>
-                        <p id="flag-interpretation-text">
-                            El estado <strong class="text-amber-600">LISTENING</strong> significa que la aplicación o demonio tiene un puerto TCP abierto esperando conexiones remotas. El estado <strong class="text-emerald-600">ESTABLISHED</strong> indica que la negociación de 3 vías (Three-way Handshake) concluyó con éxito y los paquetes están fluyendo.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="bg-brand-900 text-brand-100 p-4 rounded-2xl shadow-sm text-xs space-y-2 border border-brand-800">
-                    <div class="flex items-center space-x-2 text-brand-400 font-bold">
-                        <span>🛡️ Nota de Seguridad de Red:</span>
-                    </div>
-                    <p class="leading-relaxed">
-                        Relacionar un puerto desconocido con su <strong class="text-white">PID</strong> exacto permite consultar la tabla de procesos del Kernel (con el Administrador de Tareas en Windows o <code class="text-emerald-300">ps aux | grep [PID]</code> en Linux) para verificar si el binario que escucha en red es legítimo o un troyano.
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Socket Table & PID Inspector Section -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                    <h3 class="font-bold text-slate-900 text-base">📋 Tabla Interactiva de Sockets y Procesos</h3>
-                    <p class="text-xs text-slate-500">Haz clic en cualquier fila para inspeccionar los detalles del PID y socket asociado.</p>
-                </div>
-                <div class="flex items-center space-x-2 text-xs">
-                    <span class="text-slate-500 font-medium">Filtrar Estado:</span>
-                    <select id="socket-filter-select" onchange="renderSocketTable()" class="bg-slate-50 text-slate-700 border border-slate-300 font-medium px-2.5 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <option value="ALL">Todos los Estados</option>
-                        <option value="LISTEN">Solo LISTEN</option>
-                        <option value="ESTABLISHED">Solo ESTABLISHED</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Table Container -->
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs font-mono">
-                    <thead class="bg-slate-100 text-slate-600 uppercase tracking-wider text-[11px] border-b border-slate-200">
-                        <tr>
-                            <th class="py-3 px-4">Proto</th>
-                            <th class="py-3 px-4">Dirección Local</th>
-                            <th class="py-3 px-4">Dirección Remota</th>
-                            <th class="py-3 px-4">Estado</th>
-                            <th class="py-3 px-4">PID</th>
-                            <th class="py-3 px-4">Programa / Proceso</th>
-                            <th class="py-3 px-4 text-right">Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="socket-table-body" class="divide-y divide-slate-200 text-slate-700">
-                        <!-- Populated by JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECCIÓN 2: ESTADÍSTICAS GLOBALES Y RENDIMIENTO (NETSTAT -E -S) -->
-    <section id="tab-stats" class="tab-content hidden space-y-6">
-        <!-- Intro Paragraph required by prompt -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm leading-relaxed">
-            <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
-                <span class="p-1.5 bg-brand-100 text-brand-800 rounded-lg text-lg">📊</span>
-                <span>Monitoreo de Estadísticas Globales de Red y Rendimiento de Protocolos</span>
-            </h2>
-            <p class="mt-2 text-slate-600 text-sm">
-                En este módulo, el estudiante analiza la telemetría acumulada por la interfaz de red Ethernet (<code class="text-brand-600 font-mono">netstat -e</code>) y el resumen por pila de protocolos TCP/IPv4 (<code class="text-brand-600 font-mono">netstat -s</code>). A través de las gráficas interactivas y del simulador de escenarios de saturación de red, se pueden diagnosticar de forma precisa problemas de capa física (como errores CRC por cableado defectuoso o dúplex desalineado) frente a problemas de capa de transporte (retransmisiones masivas por saturación de routers intermedios).
-            </p>
-        </div>
-
-        <!-- Network Scenario Preset Controls -->
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Simular Escenario de Red:</label>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <button onclick="setScenario('normal')" id="scen-normal" class="scen-btn p-2.5 rounded-xl border text-xs font-semibold text-center transition border-brand-500 bg-brand-50 text-brand-700">
-                    🟢 Tráfico Saludable Normal
-                </button>
-                <button onclick="setScenario('hardware')" id="scen-hardware" class="scen-btn p-2.5 rounded-xl border text-xs font-semibold text-center transition border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100">
-                    ⚠️ Falla Física / Cable NIC
-                </button>
-                <button onclick="setScenario('congestion')" id="scen-congestion" class="scen-btn p-2.5 rounded-xl border text-xs font-semibold text-center transition border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100">
-                    🔴 Congestión de Ruta / Pérdidas
-                </button>
-                <button onclick="setScenario('scan')" id="scen-scan" class="scen-btn p-2.5 rounded-xl border text-xs font-semibold text-center transition border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100">
-                    ⚡ Intentos Fallidos / Escaneo
-                </button>
-            </div>
-        </div>
-
-        <!-- Charts Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Chart Container 1: Ethernet Layer Stats -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
-                <div>
-                    <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center justify-between">
-                        <span>📈 Estadísticas de Interfaz Ethernet (netstat -e)</span>
-                        <span class="text-xs text-slate-400 font-mono">Capa 2 / Capa 1</span>
-                    </h3>
-                    <p class="text-xs text-slate-500 mt-1">Comparativa de Paquetes Unicast vs Descartes y Errores de Interfaz.</p>
-                </div>
-                <div class="chart-container my-4">
-                    <canvas id="ethernetChart"></canvas>
-                </div>
-                <div id="ethernet-insight" class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed font-mono">
-                    <!-- Dynamic Text -->
-                </div>
-            </div>
-
-            <!-- Chart Container 2: TCP Transport Stats -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
-                <div>
-                    <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center justify-between">
-                        <span>🔄 Conexiones & Retransmisiones TCP (netstat -s)</span>
-                        <span class="text-xs text-slate-400 font-mono">Capa 4 (TCP)</span>
-                    </h3>
-                    <p class="text-xs text-slate-500 mt-1">Evaluación de aperturas activas, intentos fallidos y retransmisiones.</p>
-                </div>
-                <div class="chart-container my-4">
-                    <canvas id="tcpChart"></canvas>
-                </div>
-                <div id="tcp-insight" class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed font-mono">
-                    <!-- Dynamic Text -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Diagnostic Summary Matrix Panel -->
-        <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md space-y-4 border border-slate-800">
-            <h3 class="font-bold text-base text-brand-400 flex items-center space-x-2">
-                <span>🧠 Matriz de Diagnóstico Clínico de Red</span>
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                <div class="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1">
-                    <span class="font-bold text-rose-400 block text-sm">Escenario 1: Errores Ethernet Altos (&gt;0)</span>
-                    <p class="text-slate-300 leading-relaxed">
-                        Indica fallo en la Tarjeta de Red (NIC), conector RJ45 suelto, interferencia electromagnética o descalibración de dúplex (Full vs Half Duplex) en el switch.
-                    </p>
-                </div>
-                <div class="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1">
-                    <span class="font-bold text-amber-400 block text-sm">Escenario 2: Retransmisiones TCP Elevadas</span>
-                    <p class="text-slate-300 leading-relaxed">
-                        Indica que la red local está bien, pero los paquetes se pierden en la WAN o enlaces intermedios. TCP activa el temporizador de retransmisión al no recibir los ACK.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECCIÓN 3: DIAGNÓSTICO DNS (NSLOOKUP) -->
-    <section id="tab-dns" class="tab-content hidden space-y-6">
-        <!-- Intro Paragraph required by prompt -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm leading-relaxed">
-            <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
-                <span class="p-1.5 bg-brand-100 text-brand-800 rounded-lg text-lg">🌐</span>
-                <span>Diagnóstico Avanzado de Resolución DNS con Nslookup (Modo Interactivo)</span>
-            </h2>
-            <p class="mt-2 text-slate-600 text-sm">
-                Esta sección sumerge al estudiante en el uso interactivo de la herramienta <code class="text-brand-600 font-mono">nslookup</code> para auditar la infraestructura del Sistema de Nombres de Dominio (DNS). Mediante la simulación del shell interactivo, el usuario aprenderá a consultar registros de intercambio de correo (<span class="font-semibold text-slate-800">MX</span>), registros de dirección IPv4 (<span class="font-semibold text-slate-800">A</span>) o registros de alias (<span class="font-semibold text-slate-800">CNAME</span>), así como a conmutar el servidor de consulta en caliente (<code class="text-brand-600 font-mono">server 8.8.8.8</code>) para diagnosticar fallos específicos de caché local frente a problemas autoritativos globales.
-            </p>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- Interactive Nslookup Shell Simulator -->
-            <div class="lg:col-span-6 bg-slate-900 rounded-2xl border border-slate-800 shadow-xl overflow-hidden flex flex-col">
-                <div class="bg-slate-800 px-4 py-3 flex items-center justify-between border-b border-slate-700">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-amber-400 text-base">&gt;_</span>
-                        <span class="font-mono text-xs font-bold text-slate-200">Nslookup Interactive Shell</span>
-                    </div>
-                    <span class="text-[11px] bg-slate-900 text-slate-400 px-2 py-0.5 rounded font-mono">Port 53 / UDP</span>
-                </div>
-
-                <!-- Preset DNS Commands -->
-                <div class="bg-slate-800/40 px-3 py-2 border-b border-slate-800 flex items-center space-x-2 overflow-x-auto custom-scrollbar">
-                    <span class="text-xs font-mono text-slate-400 shrink-0">Acciones rápido:</span>
-                    <button onclick="runDnsSequence('mx')" class="text-xs font-mono bg-slate-800 hover:bg-slate-700 text-amber-300 px-2.5 py-1 rounded border border-slate-700 transition whitespace-nowrap">
-                        1. Consulta MX (google.com)
-                    </button>
-                    <button onclick="runDnsSequence('custom_dns')" class="text-xs font-mono bg-slate-800 hover:bg-slate-700 text-amber-300 px-2.5 py-1 rounded border border-slate-700 transition whitespace-nowrap">
-                        2. Cambiar Servidor (8.8.8.8)
-                    </button>
-                    <button onclick="runDnsSequence('any')" class="text-xs font-mono bg-slate-800 hover:bg-slate-700 text-amber-300 px-2.5 py-1 rounded border border-slate-700 transition whitespace-nowrap">
-                        3. Consulta ANY (mit.edu)
-                    </button>
-                </div>
-
-                <!-- Console Output -->
-                <div id="dns-terminal-output" class="p-4 font-mono text-xs sm:text-sm text-slate-200 min-h-[300px] max-h-[380px] overflow-y-auto custom-scrollbar space-y-2">
-                    <div class="text-slate-400">&gt; Presiona las secuencias de ejemplo o escribe comandos como 'set type=mx', 'server 8.8.8.8', o 'google.com'</div>
-                </div>
-
-                <!-- Input area -->
-                <div class="p-3 bg-slate-950 border-t border-slate-800 flex items-center space-x-2">
-                    <span id="dns-prompt" class="font-mono text-amber-400 font-bold text-sm">&gt;</span>
-                    <input type="text" id="dns-cli-input" onkeydown="handleDnsKeyDown(event)" placeholder="Ingresa comando nslookup..." class="flex-grow bg-transparent font-mono text-xs sm:text-sm text-white focus:outline-none placeholder-slate-600">
-                    <button onclick="executeDnsCmd()" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold font-mono text-xs px-3 py-1.5 rounded transition">
-                        Enviar
-                    </button>
-                </div>
-            </div>
-
-            <!-- DNS Query Step-by-Step Flow Visualizer -->
-            <div class="lg:col-span-6 space-y-4">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <h3 class="font-bold text-slate-900 text-base">🌐 Jerarquía e Itinerario de Consulta DNS</h3>
-                    <p class="text-xs text-slate-500">Visualización interactiva del recorrido del paquete de consulta cuando pides un registro MX o A.</p>
-
-                    <!-- DNS Hierarchy Diagram without SVG -->
-                    <div class="space-y-3 pt-2">
-                        <!-- Step 1: Local Host -->
-                        <div id="dns-step-1" class="dns-step-card p-3 rounded-xl border border-slate-200 bg-slate-50 flex items-center space-x-3 transition-all">
-                            <div class="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm shrink-0">1</div>
-                            <div class="flex-grow text-xs">
-                                <span class="font-bold text-slate-900 block">Host Local & Resolvedor Local</span>
-                                <span class="text-slate-500">Consulta la caché local o el servidor predeterminado del ISP (ej. 192.168.1.254)</span>
-                            </div>
-                        </div>
-
-                        <!-- Connection arrow HTML -->
-                        <div class="text-center text-slate-300 font-bold text-xs font-mono">↓ Query UDP Port 53</div>
-
-                        <!-- Step 2: Recursive / DNS Server -->
-                        <div id="dns-step-2" class="dns-step-card p-3 rounded-xl border border-slate-200 bg-slate-50 flex items-center space-x-3 transition-all">
-                            <div class="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm shrink-0">2</div>
-                            <div class="flex-grow text-xs">
-                                <span class="font-bold text-slate-900 block">Servidor Publico / Raíz (8.8.8.8 / Root TLD)</span>
-                                <span class="text-slate-500">Petición enviada si se fuerza el servidor con `server 8.8.8.8`</span>
-                            </div>
-                        </div>
-
-                        <!-- Connection arrow HTML -->
-                        <div class="text-center text-slate-300 font-bold text-xs font-mono">↓ Referencia TLD (.com / .edu)</div>
-
-                        <!-- Step 3: Authoritative DNS Server -->
-                        <div id="dns-step-3" class="dns-step-card p-3 rounded-xl border border-slate-200 bg-slate-50 flex items-center space-x-3 transition-all">
-                            <div class="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm shrink-0">3</div>
-                            <div class="flex-grow text-xs">
-                                <span class="font-bold text-slate-900 block">Servidor Autoritativo del Dominio</span>
-                                <span class="text-slate-500">Entrega la respuesta con autoridad sobre los registros MX / A / Glue Records</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Non-Authoritative Answer Callout -->
-                    <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-1">
-                        <span class="font-bold block">⚠️ Respuesta No Autoritativa (Non-authoritative answer):</span>
-                        <p class="text-amber-800">
-                            Significa que la respuesta fue entregada por un servidor DNS intermedio que tenía el dato almacenado en su memoria caché temporal, y no directamente por el servidor DNS primario oficial del dominio.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECCIÓN 4: CASOS PRÁCTICOS DE DIAGNÓSTICO -->
-    <section id="tab-cases" class="tab-content hidden space-y-6">
-        <!-- Intro Paragraph required by prompt -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm leading-relaxed">
-            <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
-                <span class="p-1.5 bg-brand-100 text-brand-800 rounded-lg text-lg">🧩</span>
-                <span>Centro de Diagnóstico & Resolución de Casos Prácticos</span>
-            </h2>
-            <p class="mt-2 text-slate-600 text-sm">
-                En esta sección, el estudiante pone a prueba sus competencias técnicas analizando reportes reales de errores de red. A través de este módulo interactivo, resolverás problemas cotidianos de administración de sistemas e ingeniería, fundamentando tus deducciones en las estadísticas capturadas con <code class="text-brand-600 font-mono">netstat</code> y <code class="text-brand-600 font-mono">nslookup</code>.
-            </p>
-        </div>
-
-        <!-- Case Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Case 1 -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
-                <div class="space-y-2">
-                    <span class="px-2.5 py-1 bg-rose-100 text-rose-800 rounded-md font-mono text-[11px] font-bold inline-block">Caso #1: Seguridad</span>
-                    <h3 class="font-bold text-slate-900 text-sm">Puerto Sospechoso Escuchando</h3>
-                    <p class="text-xs text-slate-600 leading-relaxed">
-                        Un servidor Linux reporta conexiones lentas. Ejecutas <code class="text-brand-600 font-mono">ss -ntpl</code> y observas un servicio desconocido escuchando en el puerto <code class="text-brand-600 font-mono">0.0.0.0:6667</code> con PID <code class="text-brand-600 font-mono">4891</code>. ¿Cuál es la acción técnica inmediata recomendada?
-                    </p>
-                </div>
-                <div class="space-y-2 pt-2 border-t border-slate-100">
-                    <button onclick="checkCaseAnswer(1, 'A')" class="w-full text-left p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs transition">
-                        A) Reiniciar la tarjeta de red (NIC).
-                    </button>
-                    <button onclick="checkCaseAnswer(1, 'B')" class="w-full text-left p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs transition">
-                        B) Rastreador con `ps aux | grep 4891` para inspeccionar el binario antes de finalizarlo.
-                    </button>
-                    <button onclick="checkCaseAnswer(1, 'C')" class="w-full text-left p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs transition">
-                        C) Ejecutar `nslookup` al puerto 6667.
-                    </button>
-                </div>
-                <div id="case-feedback-1" class="hidden p-3 rounded-lg text-xs font-medium"></div>
-            </div>
-
-            <!-- Case 2 -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
-                <div class="space-y-2">
-                    <span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-md font-mono text-[11px] font-bold inline-block">Caso #2: Rendimiento</span>
-                    <h3 class="font-bold text-slate-900 text-sm">Retransmisiones Aumentadas en TCP</h3>
-                    <p class="text-xs text-slate-600 leading-relaxed">
-                        Al ejecutar <code class="text-brand-600 font-mono">netstat -s</code> en Windows, el contador "Segmentos retransmitidos" aumenta a un ritmo de 15,000 segmentos por minuto, pero "Errores de Ethernet" en <code class="text-brand-600 font-mono">netstat -e</code> permanece en 0. ¿Qué se deduce?
-                    </p>
-                </div>
-                <div class="space-y-2 pt-2 border-t border-slate-100">
-                    <button onclick="checkCaseAnswer(2, 'A')" class="w-full text-left p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs transition">
-                        A) El cable de red local RJ45 está dañado.
-                    </button>
-                    <button onclick="checkCaseAnswer(2, 'B')" class="w-full text-left p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs transition">
-                        B) Hay alta congestión de red o pérdida de paquetes en la ruta externa WAN hacia el destino.
-                    </button>
-                    <button onclick="checkCaseAnswer(2, 'C')" class="w-full text-left p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs transition">
-                        C) El servidor DNS no responde peticiones.
-                    </button>
-                </div>
-                <div id="case-feedback-2" class="hidden p-3 rounded-lg text-xs font-medium"></div>
-            </div>
-
-            <!-- Case 3 -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-4">
-                <div class="space-y-2">
-                    <span class="px-2.5 py-1 bg-brand-100 text-brand-800 rounded-md font-mono text-[11px] font-bold inline-block">Caso #3: Correo Electrónico</span>
-                    <h3 class="font-bold text-slate-900 text-sm">Fallo en Envío de Correos SMTP</h3>
-                    <p class="text-xs text-slate-600 leading-relaxed">
-                        Los usuarios no pueden recibir correo en el dominio <code class="text-brand-600 font-mono">empresa.com</code>. Quieres verificar los servidores de correo responsables y sus prioridades. ¿Qué comandos usas en <code class="text-brand-600 font-mono">nslookup</code>?
-                    </p>
-                </div>
-                <div class="space-y-2 pt-2 border-t border-slate-100">
-                    <button onclick="checkCaseAnswer(3, 'A')" class="w-full text-left p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs transition">
-                        A) `set type=mx` seguido de `empresa.com`.
-                    </button>
-                    <button onclick="checkCaseAnswer(3, 'B')" class="w-full text-left p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs transition">
-                        B) `netstat -ano` buscando el puerto 80.
-                    </button>
-                    <button onclick="checkCaseAnswer(3, 'C')" class="w-full text-left p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs transition">
-                        C) `set type=a` seguido de `server 8.8.8.8`.
-                    </button>
-                </div>
-                <div id="case-feedback-3" class="hidden p-3 rounded-lg text-xs font-medium"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- SECCIÓN 5: GLOSARIO Y ACRÓNIMOS -->
-    <section id="tab-glossary" class="tab-content hidden space-y-6">
-        <!-- Intro Paragraph required by prompt -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm leading-relaxed">
-            <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
-                <span class="p-1.5 bg-brand-100 text-brand-800 rounded-lg text-lg">📚</span>
-                <span>Glosario Técnico y Diccionario de Acrónimos</span>
-            </h2>
-            <p class="mt-2 text-slate-600 text-sm">
-                Consulta rápida y filtrable de la terminología fundamental empleada en los diagnósticos de laboratorio de redes, basada en la literatura de Kurose & Ross (Páginas 389, 400, 423, 482, 615, 621, 629).
-            </p>
-        </div>
-
-        <!-- Filter bar -->
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-            <div class="w-full sm:w-72">
-                <input type="text" id="glossary-search" oninput="filterGlossary()" placeholder="🔍 Buscar término o acrónimo..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500">
-            </div>
-            <div class="flex items-center space-x-2 text-xs">
-                <button onclick="filterGlossaryCategory('ALL')" class="gloss-cat-btn px-3 py-1.5 rounded-lg bg-brand-600 text-white font-semibold shadow">Todos</button>
-                <button onclick="filterGlossaryCategory('CONCEPT')" class="gloss-cat-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200">Conceptos</button>
-                <button onclick="filterGlossaryCategory('ACRONYM')" class="gloss-cat-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200">Acrónimos</button>
-            </div>
-        </div>
-
-        <!-- Glossary Cards Grid -->
-        <div id="glossary-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Populated dynamically via JS -->
-        </div>
-    </section>
-
-</main>
-
-<!-- Modal: Socket / PID Inspector -->
-<div id="inspector-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden flex flex-col">
-        <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <span class="p-1 bg-brand-500 rounded text-xs font-mono font-bold">PID</span>
-                <h3 id="modal-pid-title" class="font-bold text-sm">Detalles del Proceso #996</h3>
-            </div>
-            <button onclick="closeModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
-        </div>
-        <div class="p-5 space-y-4 text-xs">
-            <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 font-mono">
-                <div>
-                    <span class="text-slate-400 block text-[10px] uppercase">Ejecutable / Servicio</span>
-                    <span id="modal-process-name" class="font-bold text-slate-800">svchost.exe</span>
-                </div>
-                <div>
-                    <span class="text-slate-400 block text-[10px] uppercase">Estado de Socket</span>
-                    <span id="modal-socket-state" class="font-bold text-amber-600">LISTENING</span>
-                </div>
-                <div>
-                    <span class="text-slate-400 block text-[10px] uppercase">IP Local : Puerto</span>
-                    <span id="modal-local-endpoint" class="text-slate-700">0.0.0.0:135</span>
-                </div>
-                <div>
-                    <span class="text-slate-400 block text-[10px] uppercase">IP Remota : Puerto</span>
-                    <span id="modal-remote-endpoint" class="text-slate-700">0.0.0.0:0</span>
-                </div>
-            </div>
-
-            <div class="space-y-1">
-                <span class="font-bold text-slate-800 block">📝 Función en el Sistema Operativo:</span>
-                <p id="modal-process-desc" class="text-slate-600 leading-relaxed">
-                    Proceso anfitrión para servicios que se ejecutan desde bibliotecas de enlace dinámico (.dll). El puerto 135 corresponde a RPC (Remote Procedure Call Endpoint Mapper).
-                </p>
-            </div>
-
-            <div class="p-3 rounded-xl bg-brand-50 border border-brand-200 text-brand-900 space-y-1">
-                <span class="font-bold block">🛡️ Evaluación de Riesgo de Seguridad:</span>
-                <p id="modal-risk-eval" class="text-brand-800 leading-relaxed">
-                    Servicio del sistema operativo legítimo. No requiere finalización.
-                </p>
-            </div>
-        </div>
-        <div class="bg-slate-100 p-3 text-right border-t border-slate-200">
-            <button onclick="closeModal()" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium text-xs transition">
-                Cerrar Inspector
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Footer with Citations -->
-<footer class="bg-slate-900 border-t border-slate-800 text-slate-400 py-6 mt-12 text-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center space-x-2">
-            <span class="text-slate-300 font-bold">Manual de Diagnóstico Avanzado de Redes</span>
-            <span class="text-slate-600">|</span>
-            <span class="text-slate-400">Windows vs Linux CLI Lab</span>
-        </div>
-        <div class="text-slate-500 font-mono text-[11px] text-center sm:text-right">
-            Fuente Teórica: Redes de Computadoras: Un Enfoque Descendente (Kurose & Ross, 2010) • Págs: 389, 400, 423, 482, 615
-        </div>
-    </div>
-</footer>
-
-<!-- JS Logic Engine -->
-<script>
-    // System State Storage
-    let currentOS = 'win';
-    let currentScenario = 'normal';
-    let ethernetChartInstance = null;
-    let tcpChartInstance = null;
-    let selectedGlossaryCategory = 'ALL';
-
-    // Base Socket Data from Source Report
-    const socketDataset = [
-        { os: 'win', proto: 'TCP', local: '0.0.0.0:135', remote: '0.0.0.0:0', state: 'LISTEN', pid: 996, program: 'svchost.exe (RPC Mapper)', desc: 'Servicio RPC Endpoint Mapper de Windows encargado de mapear llamadas a procedimientos remotos.', risk: 'Bajo. Servicio vital del sistema operativo Windows.' },
-        { os: 'win', proto: 'TCP', local: '192.168.1.99:58863', remote: '23.3.173.199:443', state: 'ESTABLISHED', pid: 3412, program: 'chrome.exe', desc: 'Navegador web manteniendo sesión HTTPS cifrada con servidor Akamai CDN.', risk: 'Bajo. Tráfico legítimo del navegador.' },
-        { os: 'win', proto: 'TCP', local: '192.168.1.99:61704', remote: '64.53.32.155:443', state: 'ESTABLISHED', pid: 3412, program: 'chrome.exe', desc: 'Segunda conexión socket HTTPS para transferencia de recursos web.', risk: 'Bajo. Tráfico normal del sistema.' },
-        { os: 'lin', proto: 'tcp', local: '0.0.0.0:22', remote: '0.0.0.0:*', state: 'LISTEN', pid: 1234, program: 'sshd', desc: 'Demonio de SSH (Secure Shell) esperando peticiones de administración remota encriptada.', risk: 'Medio. Asegurar contraseñas robustas o autenticación por llaves públicas.' },
-        { os: 'lin', proto: 'tcp', local: '0.0.0.0:3260', remote: '0.0.0.0:*', state: 'LISTEN', pid: 1670, program: 'tgtd', desc: 'Target iSCSI de Linux para exportación de almacenamiento en red.', risk: 'Bajo en SAN interna. Verificar reglas de Firewall.' },
-        { os: 'lin', proto: 'tcp', local: ':::80', remote: ':::*', state: 'LISTEN', pid: 2451, program: 'httpd', desc: 'Servidor web Apache escuchando peticiones en IPv6/IPv4.', risk: 'Bajo. Servidor web HTTP público.' }
-    ];
-
-    // Glossary & Acronyms Dataset
-    const glossaryDataset = [
-        { term: 'PID', cat: 'ACRONYM', title: 'Identificador de Proceso (Process Identifier)', desc: 'Número entero único asignado por el kernel del sistema operativo a cada proceso en ejecución para rastrear su uso de recursos.', source: 'Pág. 389' },
-        { term: 'Socket', cat: 'CONCEPT', title: 'Socket de Red', desc: 'Punto final de un enlace de comunicación bidireccional entre dos programas a través de la red, definido por una tupla (IP + Puerto).', source: 'Pág. 482' },
-        { term: 'ESTABLISHED', cat: 'CONCEPT', title: 'Estado Conectado (TCP)', desc: 'Estado de conexión TCP que indica que el apretón de manos de tres vías (Three-way Handshake) se completó con éxito y los datos fluyen.', source: 'Pág. 389' },
-        { term: 'Unicast', cat: 'CONCEPT', title: 'Unidifusión', desc: 'Tráfico de red dirigido desde un único remitente hacia un único receptor específico.', source: 'Pág. 400' },
-        { term: 'Retransmisión', cat: 'CONCEPT', title: 'Retransmisión TCP', desc: 'Acción del protocolo TCP de volver a enviar un segmento de datos cuando no recibe el acuse de recibo (ACK) antes del temporizador RTO.', source: 'Pág. 423' },
-        { term: 'MX Record', cat: 'CONCEPT', title: 'Registro de Intercambio de Correo (Mail Exchanger)', desc: 'Entrada en la zona DNS que especifica el servidor encargado de aceptar mensajes de correo electrónico en nombre del dominio objetivo.', source: 'Pág. 615' },
-        { term: 'Non-authoritative Answer', cat: 'CONCEPT', title: 'Respuesta No Autoritativa', desc: 'Respuesta DNS proporcionada por un servidor que obtuvo la información desde su caché temporal y no del servidor primario oficial.', source: 'Pág. 621' },
-        { term: 'TCP', cat: 'ACRONYM', title: 'Transmission Control Protocol', desc: 'Protocolo de la capa de transporte orientado a conexión que garantiza la entrega ordenada y confiable de paquetes.', source: 'Pág. 389' },
-        { term: 'UDP', cat: 'ACRONYM', title: 'User Datagram Protocol', desc: 'Protocolo de transporte no orientado a conexión, liviano y sin garantías de entrega ni control de flujo.', source: 'Pág. 400' },
-        { term: 'TLD', cat: 'ACRONYM', title: 'Top-Level Domain', desc: 'Dominio de Nivel Superior en la jerarquía DNS (ej. .com, .edu, .org, .es).', source: 'Pág. 629' }
-    ];
-
-    // Scenario Telemetry Mock Data
-    const scenarioData = {
-        normal: {
-            ethBytesRx: 3476531617, ethBytesTx: 2114919475,
-            ethUnicastRx: 11141791, ethUnicastTx: 6473056,
-            ethDiscards: 28, ethErrors: 0,
-            tcpActiveOpenings: 14430, tcpFailedAttempts: 120,
-            tcpEstablished: 36, tcpRetransmitted: 45,
-            ethInsight: '🟢 Estado de Interfaz Física: Óptimo. 0 errores detectados. La relación descartes/paquetes es menor al 0.001%.',
-            tcpInsight: '🟢 Estado del Transporte TCP: Estable. Tasa de retransmisión por debajo del 0.3%. Rendimiento fluido.'
-        },
-        hardware: {
-            ethBytesRx: 1205001100, ethBytesTx: 80500100,
-            ethUnicastRx: 4500100, ethUnicastTx: 1200000,
-            ethDiscards: 28596, ethErrors: 3567,
-            tcpActiveOpenings: 14430, tcpFailedAttempts: 2563,
-            tcpEstablished: 12, tcpRetransmitted: 14450,
-            ethInsight: '🚨 ALERTA CRÍTICA DE CAPA FÍSICA: 3,567 errores en la NIC. Causas típicas: cable utp defectuoso, conector colapsado o Half Duplex en switch.',
-            tcpInsight: '⚠️ IMPACTO EN TCP: Las fallas de la tarjeta física están provocando retransmisiones masivas (14,450 segmentos lost).'
-        },
-        congestion: {
-            ethBytesRx: 9800531617, ethBytesTx: 8114919475,
-            ethUnicastRx: 45141791, ethUnicastTx: 38730560,
-            ethDiscards: 142000, ethErrors: 0,
-            tcpActiveOpenings: 28900, tcpFailedAttempts: 5610,
-            tcpEstablished: 142, tcpRetransmitted: 89400,
-            ethInsight: '⚠️ CAPA 2 (ETHERNET): Sin errores físicos, pero alto número de descartes (Discards) por saturación en la cola de recepción.',
-            tcpInsight: '🚨 CONGESTIÓN SEVERA EN WAN: 89,400 retransmisiones TCP. Pérdida de paquetes en los routers intermedios de la ruta.'
-        },
-        scan: {
-            ethBytesRx: 540531617, ethBytesTx: 114919475,
-            ethUnicastRx: 8941791, ethUnicastTx: 1473056,
-            ethDiscards: 102, ethErrors: 0,
-            tcpActiveOpenings: 2100, tcpFailedAttempts: 18450,
-            tcpEstablished: 4, tcpRetransmitted: 1200,
-            ethInsight: 'ℹ️ CAPA FÍSICA: Flujo normal de tramas sin errores de CRC.',
-            tcpInsight: '⚡ PATRÓN DE ESCANEO DE PUERTOS: 18,450 intentos fallidos de conexión. Un host remoto está enviando SYN probing masivo.'
-        }
-    };
-
-    // Initialize App on DOM Load
-    document.addEventListener('DOMContentLoaded', () => {
-        setOS('win');
-        initCharts();
-        renderSocketTable();
-        renderGlossary();
-    });
-
-    // Tab Navigation Logic
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.classList.remove('border-brand-500', 'text-brand-500', 'font-bold');
-            btn.classList.add('border-transparent', 'text-slate-400');
-        });
-
-        const activeContent = document.getElementById(tabId);
-        if (activeContent) activeContent.classList.remove('hidden');
-
-        const activeNavBtn = document.getElementById(`nav-${tabId}`);
-        if (activeNavBtn) {
-            activeNavBtn.classList.add('border-brand-500', 'text-brand-500', 'font-bold');
-            activeNavBtn.classList.remove('border-transparent', 'text-slate-400');
-        }
-
-        // Re-render charts if stats tab is activated
-        if (tabId === 'tab-stats' && ethernetChartInstance) {
-            ethernetChartInstance.resize();
-            tcpChartInstance.resize();
-        }
-    }
-
-    // Set OS View Mode
-    function setOS(os) {
-        currentOS = os;
-        const winBtn = document.getElementById('os-win-btn');
-        const linBtn = document.getElementById('os-lin-btn');
-        const termTitle = document.getElementById('term-title');
-        const termPrompt = document.getElementById('term-prompt');
-        const dropdown = document.getElementById('os-selector-dropdown');
-        const flagOSBadge = document.getElementById('active-flag-os');
-
-        if (os === 'win') {
-            winBtn.className = 'px-3 py-1.5 rounded-lg font-semibold transition-all bg-brand-600 text-white shadow';
-            linBtn.className = 'px-3 py-1.5 rounded-lg font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-700';
-            termTitle.innerText = 'CMD - Windows Administrator Shell';
-            termPrompt.innerText = 'C:\\Windows\\system32>';
-            if (dropdown) dropdown.value = 'win';
-            if (flagOSBadge) flagOSBadge.innerText = 'Windows (CMD)';
-            runCommand('netstat -ano');
-        } else {
-            linBtn.className = 'px-3 py-1.5 rounded-lg font-semibold transition-all bg-brand-600 text-white shadow';
-            winBtn.className = 'px-3 py-1.5 rounded-lg font-semibold transition-all text-slate-300 hover:text-white hover:bg-slate-700';
-            termTitle.innerText = 'Bash - Linux Root Terminal (server1)';
-            termPrompt.innerText = '[root@server1 ~]#';
-            if (dropdown) dropdown.value = 'lin';
-            if (flagOSBadge) flagOSBadge.innerText = 'Linux (Bash)';
-            runCommand('netstat -ntpl');
-        }
-        renderSocketTable();
-    }
-
-    // Terminal Command Execution Logic
-    function runCommand(cmd) {
-        const body = document.getElementById('terminal-body');
-        const prompt = currentOS === 'win' ? 'C:\\Windows\\system32>' : '[root@server1 ~]#';
+    <main class="flex-grow max-w-5xl w-full mx-auto p-6 relative z-10">
         
-        let outputHtml = `<div class="text-slate-400 font-semibold"><span class="text-emerald-400">${prompt}</span> ${cmd}</div>`;
-
-        if (cmd.includes('netstat -ano')) {
-            outputHtml += `
-<div class="text-slate-300 whitespace-pre font-mono">
-Conexiones activas
-
-  Proto  Dirección local        Dirección remota       Estado           PID
-  TCP    0.0.0.0:135            0.0.0.0:0              LISTENING        996
-  TCP    192.168.1.99:58863     23.3.173.199:443       ESTABLISHED      3412
-  TCP    192.168.1.99:61704     64.53.32.155:443       ESTABLISHED      3412
-</div>`;
-            renderFlagBreakdown('win-ano');
-        } else if (cmd.includes('netstat -v -b')) {
-            outputHtml += `
-<div class="text-slate-300 whitespace-pre font-mono">
-  Proto  Dirección local        Dirección remota       Estado           PID
-  TCP    192.168.1.99:58863     23.3.173.199:443       ESTABLISHED      3412
-  [chrome.exe]
-  TCP    0.0.0.0:135            0.0.0.0:0              LISTENING        996
-  C:\\Windows\\system32\\svchost.exe [rpcpss]
-</div>`;
-            renderFlagBreakdown('win-vb');
-        } else if (cmd.includes('netstat -ntpl')) {
-            outputHtml += `
-<div class="text-slate-300 whitespace-pre font-mono">
-Active Internet connections (only servers)
-Proto Recv-Q Send-Q Local Address   Foreign Address   State    PID/Program name
-tcp        0      0 0.0.0.0:22      0.0.0.0:*         LISTEN   1234/sshd
-tcp        0      0 0.0.0.0:3260    0.0.0.0:*         LISTEN   1670/tgtd
-tcp        0      0 :::80           :::*              LISTEN   2451/httpd
-</div>`;
-            renderFlagBreakdown('lin-ntpl');
-        } else if (cmd.includes('ss -ntpl')) {
-            outputHtml += `
-<div class="text-slate-300 whitespace-pre font-mono">
-State      Recv-Q Send-Q Local Address:Port  Peer Address:Port
-LISTEN     0      128    0.0.0.0:22          0.0.0.0:*        users:(("sshd",pid=1234,fd=3))
-LISTEN     0      100    0.0.0.0:3260        0.0.0.0:*        users:(("tgtd",pid=1670,fd=4))
-LISTEN     0      128    :::80               :::*             users:(("httpd",pid=2451,fd=4))
-</div>`;
-            renderFlagBreakdown('lin-ss');
-        } else {
-            outputHtml += `<div class="text-rose-400">Comando '${cmd}' no reconocido en el laboratorio. Prueba los botones predeterminados.</div>`;
-        }
-
-        body.innerHTML = outputHtml;
-        body.scrollTop = body.scrollHeight;
-    }
-
-    function handleCliKeyDown(e) {
-        if (e.key === 'Enter') executeInputCmd();
-    }
-
-    function executeInputCmd() {
-        const input = document.getElementById('cli-input');
-        if (input.value.trim() !== '') {
-            runCommand(input.value.trim());
-            input.value = '';
-        }
-    }
-
-    // Render Flags Breakdown Panel
-    function renderFlagBreakdown(type) {
-        const container = document.getElementById('flag-breakdown-list');
-        let flags = [];
-
-        if (type === 'win-ano') {
-            flags = [
-                { flag: '-a', desc: 'Muestra todas las conexiones activas y los puertos en escucha (LISTENING).' },
-                { flag: '-n', desc: 'Muestra direcciones e IP/puertos en formato numérico (evita resoluciones DNS lentas).' },
-                { flag: '-o', desc: 'Incluye la columna del Identificador de Proceso (PID) asociado a cada socket.' }
-            ];
-        } else if (type === 'win-vb') {
-            flags = [
-                { flag: '-v', desc: 'Modo detallado (verbose). Muestra las DLLs asociadas al proceso.' },
-                { flag: '-b', desc: 'Muestra el nombre del ejecutable (.exe) involucrado en la creación de la conexión.' }
-            ];
-        } else if (type === 'lin-ntpl') {
-            flags = [
-                { flag: '-n', desc: 'Muestra direcciones IP y puertos en formato numérico.' },
-                { flag: '-t', desc: 'Filtra únicamente las conexiones del protocolo de transporte TCP.' },
-                { flag: '-p', desc: 'Muestra el PID y el nombre del programa/demonio (Requiere privilegios de root).' },
-                { flag: '-l', desc: 'Muestra exclusivamente los sockets que están en estado "LISTEN".' }
-            ];
-        } else if (type === 'lin-ss') {
-            flags = [
-                { flag: 'ss', desc: 'Socket Statistics. Utilidad moderna del paquete iproute2 que reemplaza a netstat en Linux.' },
-                { flag: '-ntpl', desc: 'Mismas banderas de filtrado (TCP numérico, demostrando demonios en LISTEN y PID).' }
-            ];
-        }
-
-        container.innerHTML = flags.map(f => `
-            <div class="p-2 bg-slate-50 rounded-lg border border-slate-200 flex items-start space-x-2">
-                <span class="font-mono font-bold text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded border border-brand-200 shrink-0">${f.flag}</span>
-                <span class="text-slate-700">${f.desc}</span>
-            </div>
-        `).join('');
-    }
-
-    // Render Filterable Socket Table
-    function renderSocketTable() {
-        const filterState = document.getElementById('socket-filter-select').value;
-        const tbody = document.getElementById('socket-table-body');
-
-        const filtered = socketDataset.filter(s => {
-            const matchesOS = s.os === currentOS;
-            const matchesState = filterState === 'ALL' || s.state === filterState;
-            return matchesOS && matchesState;
-        });
-
-        if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="py-4 text-center text-slate-400">No hay sockets correspondientes al filtro seleccionado.</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = filtered.map(s => `
-            <tr onclick="openInspectorModal(${s.pid})" class="hover:bg-slate-50 cursor-pointer transition">
-                <td class="py-3 px-4 font-bold text-brand-700">${s.proto}</td>
-                <td class="py-3 px-4">${s.local}</td>
-                <td class="py-3 px-4">${s.remote}</td>
-                <td class="py-3 px-4">
-                    <span class="px-2 py-0.5 rounded text-[11px] font-bold ${s.state === 'LISTEN' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
-                        ${s.state}
-                    </span>
-                </td>
-                <td class="py-3 px-4 font-bold text-slate-900">${s.pid}</td>
-                <td class="py-3 px-4 text-slate-600 font-sans font-medium">${s.program}</td>
-                <td class="py-3 px-4 text-right">
-                    <button class="px-2 py-1 bg-slate-100 hover:bg-brand-50 text-brand-600 hover:text-brand-700 rounded font-sans font-semibold text-[11px]">Inspeccionar</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    // Modal Inspector Logic
-    function openInspectorModal(pid) {
-        const item = socketDataset.find(s => s.pid === pid);
-        if (!item) return;
-
-        document.getElementById('modal-pid-title').innerText = `Detalles del Proceso #${item.pid}`;
-        document.getElementById('modal-process-name').innerText = item.program;
-        document.getElementById('modal-socket-state').innerText = item.state;
-        document.getElementById('modal-local-endpoint').innerText = item.local;
-        document.getElementById('modal-remote-endpoint').innerText = item.remote;
-        document.getElementById('modal-process-desc').innerText = item.desc;
-        document.getElementById('modal-risk-eval').innerText = item.risk;
-
-        document.getElementById('inspector-modal').classList.remove('hidden');
-    }
-
-    function closeModal() {
-        document.getElementById('inspector-modal').classList.add('hidden');
-    }
-
-    // Initialize Chart.js Data Visualizations
-    function initCharts() {
-        // Ethernet Chart
-        const ctxEth = document.getElementById('ethernetChart').getContext('2d');
-        ethernetChartInstance = new Chart(ctxEth, {
-            type: 'bar',
-            data: {
-                labels: ['Paquetes Unicast (M)', 'Descartes (K)', 'Errores (K)'],
-                datasets: [
-                    { label: 'Recibidos (Rx)', data: [11.14, 28.5, 3.56], backgroundColor: '#0ea5e9' },
-                    { label: 'Enviados (Tx)', data: [6.47, 31.6, 0.0], backgroundColor: '#64748b' }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                    x: { grid: { display: false } }
-                },
-                plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
-                }
-            }
-        });
-
-        // TCP Chart
-        const ctxTcp = document.getElementById('tcpChart').getContext('2d');
-        tcpChartInstance = new Chart(ctxTcp, {
-            type: 'doughnut',
-            data: {
-                labels: ['Aperturas Activas', 'Intentos Fallidos', 'Conexiones Actuales', 'Segmentos Retransmitidos'],
-                datasets: [{
-                    data: [14430, 2563, 36, 14450],
-                    backgroundColor: ['#0ea5e9', '#ef4444', '#10b981', '#f59e0b']
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
-                }
-            }
-        });
-
-        setScenario('normal');
-    }
-
-    // Set Scenario Telemetry and Update Charts
-    function setScenario(scenKey) {
-        currentScenario = scenKey;
-        const d = scenarioData[scenKey];
-
-        // Update Scenario Buttons Styling
-        document.querySelectorAll('.scen-btn').forEach(btn => {
-            btn.className = 'scen-btn p-2.5 rounded-xl border text-xs font-semibold text-center transition border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100';
-        });
-        const activeBtn = document.getElementById(`scen-${scenKey}`);
-        if (activeBtn) {
-            activeBtn.className = 'scen-btn p-2.5 rounded-xl border text-xs font-semibold text-center transition border-brand-500 bg-brand-50 text-brand-700 shadow-sm';
-        }
-
-        // Update Ethernet Chart Data
-        if (ethernetChartInstance) {
-            ethernetChartInstance.data.datasets[0].data = [
-                (d.ethUnicastRx / 1000000).toFixed(2),
-                (d.ethDiscards / 1000).toFixed(1),
-                (d.ethErrors / 1000).toFixed(1)
-            ];
-            ethernetChartInstance.data.datasets[1].data = [
-                (d.ethUnicastTx / 1000000).toFixed(2),
-                (d.ethDiscards / 1000).toFixed(1),
-                0
-            ];
-            ethernetChartInstance.update();
-        }
-
-        // Update TCP Chart Data
-        if (tcpChartInstance) {
-            tcpChartInstance.data.datasets[0].data = [
-                d.tcpActiveOpenings,
-                d.tcpFailedAttempts,
-                d.tcpEstablished,
-                d.tcpRetransmitted
-            ];
-            tcpChartInstance.update();
-        }
-
-        // Update Diagnostic Insights Text
-        document.getElementById('ethernet-insight').innerText = d.ethInsight;
-        document.getElementById('tcp-insight').innerText = d.tcpInsight;
-    }
-
-    // Nslookup Interactive Terminal
-    function runDnsSequence(seq) {
-        const term = document.getElementById('dns-terminal-output');
-        let html = '';
-
-        if (seq === 'mx') {
-            html = `
-<div class="text-amber-300">&gt; set type=mx</div>
-<div class="text-amber-300">&gt; google.com</div>
-<div class="text-slate-300 font-mono">
-Servidor:  UnKnown
-Address:   192.168.1.254
-
-Respuesta no autoritativa:
-google.com       MX preference = 10, mail exchanger = smtp.google.com
-google.com       MX preference = 20, mail exchanger = alt1.aspmx.l.google.com
-</div>`;
-            highlightDnsStep(3);
-        } else if (seq === 'custom_dns') {
-            html = `
-<div class="text-amber-300">&gt; server 8.8.8.8</div>
-<div class="text-slate-300 font-mono">
-Default Server:  google-public-dns-a.google.com
-Address:  8.8.8.8
-</div>
-<div class="text-amber-300">&gt; set type=a</div>
-<div class="text-amber-300">&gt; mit.edu</div>
-<div class="text-slate-300 font-mono">
-Non-authoritative answer:
-Name:    mit.edu
-Address: 18.18.0.47
-</div>`;
-            highlightDnsStep(2);
-        } else if (seq === 'any') {
-            html = `
-<div class="text-amber-300">&gt; set type=any</div>
-<div class="text-amber-300">&gt; hackers-arise.com</div>
-<div class="text-slate-300 font-mono">
-hackers-arise.com       text = "v=spf1 include:mail.zendesk.com ~all"
-hackers-arise.com       nameserver = ns1.hostinger.com
-hackers-arise.com       MX preference = 10, mail exchanger = aspmx.l.google.com
-</div>`;
-            highlightDnsStep(3);
-        }
-
-        term.innerHTML = html;
-        term.scrollTop = term.scrollHeight;
-    }
-
-    function handleDnsKeyDown(e) {
-        if (e.key === 'Enter') executeDnsCmd();
-    }
-
-    function executeDnsCmd() {
-        const input = document.getElementById('dns-cli-input');
-        const val = input.value.trim();
-        if (!val) return;
-
-        const term = document.getElementById('dns-terminal-output');
-        term.innerHTML += `<div class="text-amber-300">&gt; ${val}</div>`;
-
-        if (val.toLowerCase().includes('type=mx')) {
-            term.innerHTML += `<div class="text-slate-400">Modo de consulta cambiado a MX (Mail Exchanger). Ingresa un dominio.</div>`;
-        } else if (val.toLowerCase().includes('server')) {
-            term.innerHTML += `<div class="text-slate-400">Servidor DNS predeterminado actualizado a ${val.split(' ')[1] || '8.8.8.8'}.</div>`;
-        } else {
-            term.innerHTML += `
-<div class="text-slate-300 font-mono">
-Respuesta no autoritativa:
-${val}       internet address = 104.21.48.12
-</div>`;
-        }
-
-        input.value = '';
-        term.scrollTop = term.scrollHeight;
-    }
-
-    function highlightDnsStep(stepNum) {
-        document.querySelectorAll('.dns-step-card').forEach(card => {
-            card.classList.remove('border-amber-400', 'bg-amber-50/50');
-        });
-        const activeCard = document.getElementById(`dns-step-${stepNum}`);
-        if (activeCard) {
-            activeCard.classList.add('border-amber-400', 'bg-amber-50/50');
-        }
-    }
-
-    // Diagnostic Quiz / Case Solver
-    function checkCaseAnswer(caseNum, answer) {
-        const feedbackDiv = document.getElementById(`case-feedback-${caseNum}`);
-        feedbackDiv.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-900', 'bg-rose-100', 'text-rose-900');
-
-        if (caseNum === 1) {
-            if (answer === 'B') {
-                feedbackDiv.classList.add('bg-emerald-100', 'text-emerald-900');
-                feedbackDiv.innerText = '✅ Correcto. Inspeccionar el PID con ps aux antes de matar el proceso permite recolectar evidencias forenses del binario ejecutable.';
-            } else {
-                feedbackDiv.classList.add('bg-rose-100', 'text-rose-900');
-                feedbackDiv.innerText = '❌ Incorrecto. Reiniciar la NIC o consultar DNS no identifica qué binario malicioso abrió el puerto 6667.';
-            }
-        } else if (caseNum === 2) {
-            if (answer === 'B') {
-                feedbackDiv.classList.add('bg-emerald-100', 'text-emerald-900');
-                feedbackDiv.innerText = '✅ Correcto. Si Errores Ethernet es 0, la capa física local está sana. Las retransmisiones elevadas corresponden a descartes en la red externa WAN (Pág. 423).';
-            } else {
-                feedbackDiv.classList.add('bg-rose-100', 'text-rose-900');
-                feedbackDiv.innerText = '❌ Incorrecto. Si el cable estuviera dañado, el contador de Errores Ethernet en netstat -e aumentaría.';
-            }
-        } else if (caseNum === 3) {
-            if (answer === 'A') {
-                feedbackDiv.classList.add('bg-emerald-100', 'text-emerald-900');
-                feedbackDiv.innerText = '✅ Correcto. El parámetro `set type=mx` configura la consulta para extraer los Mail Exchanger del dominio objetivo (Pág. 615).';
-            } else {
-                feedbackDiv.classList.add('bg-rose-100', 'text-rose-900');
-                feedbackDiv.innerText = '❌ Incorrecto. Debe configurarse la consulta tipo MX para resolver los servidores de correo.';
-            }
-        }
-    }
-
-    // Glossary Rendering and Filtering
-    function renderGlossary() {
-        const grid = document.getElementById('glossary-grid');
-        const searchTerm = document.getElementById('glossary-search').value.toLowerCase();
-
-        const filtered = glossaryDataset.filter(item => {
-            const matchesCategory = selectedGlossaryCategory === 'ALL' || item.cat === selectedGlossaryCategory;
-            const matchesSearch = item.term.toLowerCase().includes(searchTerm) ||
-                                  item.title.toLowerCase().includes(searchTerm) ||
-                                  item.desc.toLowerCase().includes(searchTerm);
-            return matchesCategory && matchesSearch;
-        });
-
-        if (filtered.length === 0) {
-            grid.innerHTML = `<div class="col-span-full text-center py-8 text-slate-400">No se encontraron términos que coincidan con la búsqueda.</div>`;
-            return;
-        }
-
-        grid.innerHTML = filtered.map(item => `
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between space-y-3 hover:border-brand-300 transition">
-                <div class="space-y-1.5">
-                    <div class="flex items-center justify-between">
-                        <span class="font-mono font-bold text-sm text-brand-700">${item.term}</span>
-                        <span class="text-[10px] font-mono px-2 py-0.5 rounded ${item.cat === 'ACRONYM' ? 'bg-slate-100 text-slate-700' : 'bg-brand-50 text-brand-800'}">
-                            ${item.cat === 'ACRONYM' ? 'Acrónimo' : 'Concepto'}
-                        </span>
+        <!-- SECCIÓN: INTRODUCCIÓN -->
+        <section id="intro" class="space-y-6">
+            <div class="bg-slate-800/50 border border-slate-700 p-6 rounded-lg">
+                <h2 class="text-2xl font-bold text-white mb-4">Manual de Redes y Administración en Consola</h2>
+                <p class="text-slate-300 mb-4">De Cero a Administrador de Sistemas (Windows vs. Linux).</p>
+                <h3 class="text-lg font-semibold text-sky-400 mt-4 mb-2">¿Qué es la Consola y por qué la necesitamos?</h3>
+                <p class="text-sm text-slate-400 mb-4">La terminal no es una reliquia del pasado; es el medio más preciso, potente y eficiente para comunicarse con una computadora. Mientras que una interfaz gráfica te limita a hacer únicamente lo que los diseñadores pusieron en un botón, la línea de comandos te otorga control total sobre el sistema operativo.</p>
+                
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <div class="bg-slate-950 p-4 rounded border border-slate-800 cursor-pointer hover:border-sky-500 transition" onclick="playRetroSound('select')">
+                        <span class="text-sky-500 font-mono text-sm block mb-1">Ecosistema Windows:</span>
+                        <ul class="text-xs text-slate-400 space-y-1 list-disc pl-4">
+                            <li>CMD (Command Prompt)</li>
+                            <li>PowerShell (Basado en objetos)</li>
+                        </ul>
                     </div>
-                    <h4 class="font-bold text-xs text-slate-900">${item.title}</h4>
-                    <p class="text-xs text-slate-600 leading-relaxed">${item.desc}</p>
-                </div>
-                <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                    <span>📖 Kurose & Ross</span>
-                    <span>${item.source}</span>
+                    <div class="bg-slate-950 p-4 rounded border border-slate-800 cursor-pointer hover:border-emerald-500 transition" onclick="playRetroSound('select')">
+                        <span class="text-emerald-500 font-mono text-sm block mb-1">Ecosistema Linux:</span>
+                        <ul class="text-xs text-slate-400 space-y-1 list-disc pl-4">
+                            <li>Bash (Bourne Again Shell)</li>
+                            <li>Todo es un archivo, tuberías (pipes)</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        `).join('');
-    }
+        </section>
 
-    function filterGlossary() {
-        renderGlossary();
-    }
+        <!-- SECCIÓN: MÓDULO 1 -->
+        <section id="mod1" class="hidden space-y-6">
+            <div class="bg-slate-800/50 border border-slate-700 p-6 rounded-lg">
+                <h2 class="text-2xl font-bold text-white mb-4">Módulo 1: El Primer Contacto con la Terminal</h2>
+                
+                <!-- 1.1 Limpieza -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-sky-400 mb-2">1.1 Limpieza de Pantalla</h3>
+                    <p class="text-sm text-slate-400 mb-3">Limpiar la pantalla te permite volver a enfocarte.</p>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-900 border-l-2 border-sky-500 p-3">
+                            <span class="text-[10px] text-sky-500 uppercase tracking-widest block mb-1">Windows (CMD/PowerShell)</span>
+                            <code class="text-green-400 font-mono text-sm">cls</code>
+                            <p class="text-xs text-slate-500 mt-2">Significa Clear Screen (Limpiar Pantalla).</p>
+                        </div>
+                        <div class="bg-slate-900 border-l-2 border-emerald-500 p-3">
+                            <span class="text-[10px] text-emerald-500 uppercase tracking-widest block mb-1">Linux (Bash)</span>
+                            <code class="text-green-400 font-mono text-sm">clear</code>
+                            <p class="text-xs text-slate-500 mt-2">Binario usualmente en /usr/bin/clear.</p>
+                        </div>
+                    </div>
+                </div>
 
-    function filterGlossaryCategory(cat) {
-        selectedGlossaryCategory = cat;
-        document.querySelectorAll('.gloss-cat-btn').forEach(btn => {
-            btn.className = 'gloss-cat-btn px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 font-semibold hover:bg-slate-200';
-        });
-        event.target.className = 'gloss-cat-btn px-3 py-1.5 rounded-lg bg-brand-600 text-white font-semibold shadow';
-        renderGlossary();
-    }
-</script>
+                <!-- 1.2 Consulta -->
+                <div>
+                    <h3 class="text-lg font-semibold text-sky-400 mb-2">1.2 Consulta y Exploración</h3>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-900 border-l-2 border-sky-500 p-3 relative group">
+                            <span class="text-[10px] text-sky-500 uppercase tracking-widest block mb-1">Windows</span>
+                            <code class="text-green-400 font-mono text-sm">dir [ruta] [/p] [/w]</code>
+                            <button onclick="playRetroSound('beep');" class="btn-glow absolute bottom-2 right-2 bg-slate-800 text-sky-300 text-[10px] px-2 py-1 rounded border border-slate-700">Ejecutar Simulación</button>
+                        </div>
+                        <div class="bg-slate-900 border-l-2 border-emerald-500 p-3 relative group">
+                            <span class="text-[10px] text-emerald-500 uppercase tracking-widest block mb-1">Linux</span>
+                            <code class="text-green-400 font-mono text-sm">ls [-l] [-a] [ruta]</code>
+                            <button onclick="playRetroSound('beep');" class="btn-glow absolute bottom-2 right-2 bg-slate-800 text-emerald-300 text-[10px] px-2 py-1 rounded border border-slate-700">Ejecutar Simulación</button>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </section>
+    </main>
+
+    <!-- Generador de Sonido 8-Bit (Web Audio API) -->
+    <script>
+        // Inicializar contexto de audio al interactuar
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Sintetizador 8-bits retro
+        function playRetroSound(type) {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+
+            if (type === 'blip') {
+                // Sonido de navegación rápido (onda cuadrada)
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } 
+            else if (type === 'coin') {
+                // Sonido agudo ascendente (estilo moneda)
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(987.77, now);
+                osc.frequency.setValueAtTime(1318.51, now + 0.08);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+            else if (type === 'error') {
+                // Sonido de error grave (onda sierra)
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+            else if (type === 'beep') {
+                // Sonido de terminal estándar
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, now);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+            else if (type === 'select') {
+                // Sonido de clic sutil
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                gainNode.gain.setValueAtTime(0.05, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            }
+        }
+
+        // Lógica para cambiar entre pestañas/módulos
+        function switchModule(modId) {
+            document.getElementById('intro').classList.add('hidden');
+            document.getElementById('mod1').classList.add('hidden');
+            document.getElementById(modId).classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>
